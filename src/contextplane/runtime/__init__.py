@@ -1,5 +1,11 @@
 """Protocol-independent ContextPlane runtime orchestration."""
 
+from contextplane.runtime.domain import (
+    ContextProvenance,
+    EffectiveContextItem,
+    ResolveContextRequest,
+    ResolveContextResponse,
+)
 from contextplane.runtime.service import (
     RuntimeGovernanceConflictError,
     RuntimePolicyConfigurationError,
@@ -8,6 +14,10 @@ from contextplane.runtime.service import (
 )
 
 __all__ = [
+    "ContextProvenance",
+    "EffectiveContextItem",
+    "ResolveContextRequest",
+    "ResolveContextResponse",
     "RuntimeGovernanceConflictError",
     "RuntimePolicyConfigurationError",
     "RuntimeResolutionError",
