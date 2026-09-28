@@ -35,7 +35,7 @@ Deliver:
 - authority levels;
 - CRUD API;
 - immutable versioning;
-- YAML seed loader.
+- YAML seed loader. **Verified in PR-005:** safe YAML parsing, canonical checksums, stable seed identity, idempotent reload, and immutable supersession.
 
 Exit gate: no update silently mutates historical records.
 

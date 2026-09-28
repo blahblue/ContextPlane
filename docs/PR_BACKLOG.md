@@ -67,6 +67,8 @@ Acceptance:
 
 ### PR-005 — Seed loader
 
+**Status:** verified
+
 Dependencies: PR-003
 
 Acceptance:
