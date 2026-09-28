@@ -1,0 +1,190 @@
+# Threat Model
+
+Status: draft  
+Last updated: 2026-09-28
+
+## Scope
+
+ContextPlane resolves organizational context for AI clients based on identity, task, resource, and policy.
+
+Primary assets:
+
+- organizational context and policy;
+- identity and authorization claims;
+- provenance and version metadata;
+- audit records;
+- source-system references;
+- integration credentials.
+
+The LLM is **outside** the trusted computing base.
+
+## Trust boundaries
+
+```text
+[User / Agent]
+      |
+      v
+[Gateway API / MCP]
+      |
+      v
+[Identity + Policy Boundary]
+      |
+      v
+[Context Resolver]
+   /        \
+  v          v
+[Registry] [Sources]
+      |
+      v
+[Audit]
+```
+
+External source content is untrusted even when retrieved from an authenticated enterprise system.
+
+## Threats
+
+### T1 — Cross-tenant leakage
+
+A principal retrieves another tenant's context.
+
+Mitigations:
+
+- tenant required in every principal;
+- tenant filtering before candidate selection;
+- tenant included in cache keys;
+- fail closed on missing/ambiguous tenant;
+- negative integration tests.
+
+### T2 — User privilege escalation
+
+A user requests context outside their authorized scope.
+
+Mitigations:
+
+- validated OIDC claims;
+- explicit policy evaluation;
+- never trust requested scope as authorization;
+- audit denied requests.
+
+### T3 — Agent privilege escalation
+
+An agent has broader access than the user it acts for, or user and agent identity are conflated.
+
+Mitigations:
+
+- distinct user and agent principals;
+- explicit on-behalf-of semantics;
+- effective permissions derived from both identities;
+- deny ambiguous identity chains.
+
+### T4 — Prompt injection in source content
+
+A document says “ignore policy” or attempts to redefine authority.
+
+Mitigations:
+
+- content never grants authority by wording;
+- authority comes from metadata, owner, source, and publication workflow;
+- source text is data, not executable policy.
+
+### T5 — Context poisoning
+
+A malicious or low-quality source introduces false context.
+
+Mitigations:
+
+- explicit source ownership;
+- provenance;
+- publication state;
+- immutable versions;
+- owner review for high-authority context.
+
+### T6 — Stale policy
+
+An old policy remains active after supersession.
+
+Mitigations:
+
+- effective dates;
+- version-aware cache invalidation;
+- supersession links;
+- freshness checks;
+- audit exact policy versions used.
+
+### T7 — Over-retrieval
+
+The gateway returns more context than required.
+
+Mitigations:
+
+- task/resource/audience-aware resolution;
+- sensitivity filtering;
+- minimum-context objective;
+- evaluation metric for retrieval size.
+
+### T8 — Forged or invalid JWT
+
+A caller supplies a token with bad issuer, audience, signature, expiry, or tenant.
+
+Mitigations:
+
+- strict OIDC validation;
+- explicit allowed issuers/audiences;
+- short clock-skew tolerance;
+- deny on validation ambiguity.
+
+### T9 — Cache confusion
+
+Cached context is reused across users, tenants, or policy versions.
+
+Mitigations:
+
+- cache keys include tenant, principal, task, resource, policy version, and context version state;
+- short TTLs;
+- invalidation on authoritative updates.
+
+### T10 — Audit tampering
+
+A privileged actor alters decision history.
+
+Mitigations:
+
+- append-only audit design;
+- restricted write path;
+- external log sink in enterprise deployments;
+- include resolution IDs and hashes.
+
+### T11 — Secret exposure
+
+Credentials or tokens enter the context graph.
+
+Mitigations:
+
+- store references, not secret values;
+- use enterprise secret stores;
+- redact sensitive logs.
+
+### T12 — Mandatory-context illusion
+
+Users assume a “mandatory” instruction guarantees downstream model compliance.
+
+Mitigations:
+
+- explicitly distinguish advisory context from enforced authorization;
+- protect sensitive resources at an enforceable boundary;
+- never market prompt obedience as security.
+
+## Security test categories
+
+The MVP should include tests for:
+
+- cross-tenant denial;
+- user privilege escalation;
+- agent privilege escalation;
+- invalid token variants;
+- prompt-injection content;
+- stale/superseded policies;
+- cache-key isolation;
+- over-retrieval;
+- context poisoning;
+- mandatory-control override attempts.
