@@ -213,3 +213,28 @@ def test_hs256_algorithm_confusion_fails_closed(keypair: tuple[str, str]) -> Non
 
     with pytest.raises(AuthenticationError, match="token validation failed"):
         validator(public_key).validate(forged)
+
+
+def test_contradictory_agent_marker_claims_fail_closed() -> None:
+    with pytest.raises(ValueError, match="claims disagree"):
+        principal_from_entra_claims(
+            claims(
+                idtyp="app",
+                scp=None,
+                xms_act_fct="11",
+                xms_sub_fct="13",
+            ),
+            expected_tenant_id=TENANT,
+        )
+
+
+def test_mutable_display_identity_claims_are_ignored_for_authorization() -> None:
+    principal = principal_from_entra_claims(
+        claims(
+            preferred_username="attacker-controlled@example.test",
+            name="Mutable Display Name",
+        ),
+        expected_tenant_id=TENANT,
+    )
+
+    assert principal.subject == "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
