@@ -46,3 +46,8 @@ class PrincipalValidator(Protocol):
     def validate(self, token: str) -> Principal:
         """Validate a token and return a normalized principal."""
         ...
+
+
+def principal_has_permission(principal: Principal, permission: str) -> bool:
+    """Return whether delegated scopes or application roles grant a permission."""
+    return permission in principal.scopes or permission in principal.roles
