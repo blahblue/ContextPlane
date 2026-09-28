@@ -300,3 +300,54 @@ def test_multi_candidate_chain_preserves_each_suppression_reason() -> None:
     assert decision.steps[0].suppressed_record_id == broad.record_id
     assert decision.steps[1].winner_record_id == user_policy.record_id
     assert decision.steps[1].suppressed_record_id == team.record_id
+
+
+_AUTHORITY_ORDER = [
+    AuthorityLevel.PREFERENCE,
+    AuthorityLevel.RECOMMENDATION,
+    AuthorityLevel.STANDARD,
+    AuthorityLevel.POLICY,
+    AuthorityLevel.MANDATORY_CONTROL,
+]
+
+
+@pytest.mark.parametrize("broad_authority", _AUTHORITY_ORDER)
+@pytest.mark.parametrize("narrow_authority", _AUTHORITY_ORDER)
+@pytest.mark.parametrize("broad_override", list(OverridePolicy))
+def test_full_authority_and_override_matrix(
+    broad_authority: AuthorityLevel,
+    narrow_authority: AuthorityLevel,
+    broad_override: OverridePolicy,
+) -> None:
+    broad = candidate(
+        record=100 + _AUTHORITY_ORDER.index(broad_authority),
+        authority=broad_authority,
+        specificity=0,
+        override=broad_override,
+        value="broad",
+    )
+    narrow = candidate(
+        record=200 + _AUTHORITY_ORDER.index(narrow_authority),
+        authority=narrow_authority,
+        specificity=1,
+        override=OverridePolicy.DENY,
+        value="narrow",
+    )
+
+    result = apply_conflict_precedence(resolve(broad, narrow))
+    winner = result.effective[0]
+
+    if narrow_authority is AuthorityLevel.MANDATORY_CONTROL:
+        expected = narrow
+    elif broad_authority is AuthorityLevel.MANDATORY_CONTROL:
+        expected = broad
+    elif _AUTHORITY_ORDER.index(narrow_authority) > _AUTHORITY_ORDER.index(
+        broad_authority
+    ):
+        expected = narrow
+    elif broad_override is OverridePolicy.ALLOW:
+        expected = narrow
+    else:
+        expected = broad
+
+    assert winner.record_id == expected.record_id
