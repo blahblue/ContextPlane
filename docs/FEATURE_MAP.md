@@ -19,7 +19,7 @@ Status values: **planned**, **partial**, **implemented**, **verified**, **deferr
 | Registry | Provenance schema | Yes | verified | typed source fields + DB constraints |
 | Graph | Typed relationships | Yes | verified | tenant-scoped logical edges + PostgreSQL FK/adversarial tests |
 | Resolver | Hierarchical scope | Yes | verified | scope matching + wildcard/missing-dimension tests |
-| Resolver | Authority levels | Yes | planned | conflict tests |
+| Resolver | Authority levels | Yes | implemented | authority/override matrix + fail-closed tie tests |
 | Resolver | Explanation trace | Yes | verified | deterministic candidate explanations |
 | Policy | Allow / deny | Yes | planned | adversarial tests |
 | Policy | Mandatory controls | Yes | planned | override rejection |
