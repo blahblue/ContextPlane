@@ -4,6 +4,10 @@ Status values: **planned**, **partial**, **implemented**, **verified**, **deferr
 
 | Area | Feature | MVP | Status | Verification |
 |---|---|---:|---|---|
+| Foundation | Python package scaffold | Yes | verified | CI install + import |
+| Foundation | FastAPI health endpoint | Yes | verified | API tests |
+| Foundation | Lint / type / test CI | Yes | verified | GitHub Actions run 36442725339 |
+| Foundation | Containerized local service | Yes | verified | Docker definition review + CI package verification |
 | Registry | Context item CRUD | Yes | planned | API + DB integration |
 | Registry | Immutable versioning | Yes | planned | supersession tests |
 | Registry | Provenance | Yes | planned | source trace assertions |
