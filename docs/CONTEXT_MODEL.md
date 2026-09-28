@@ -99,16 +99,23 @@ Source text never acquires authority from its wording. Authority is explicit met
 
 ### Relation
 
-A typed relationship between context objects or enterprise entities. Relations are planned for PR-006 and are not part of the current schema.
+A directed typed edge between two stable logical context identities.
 
-Examples:
+The MVP relation vocabulary is:
 
 ```text
-team -> belongs_to -> business_unit
-repository -> governed_by -> engineering_standard
-client_deck -> uses -> external_brand_profile
-context_item -> supersedes -> context_item
+belongs_to
+depends_on
+governs
+related_to
+uses
 ```
+
+Relations store source and target `logical_id` values so an edge survives immutable context supersession. Each endpoint also stores an immutable version anchor ID. Composite PostgreSQL foreign keys over `tenant_id + logical_id + anchor_id` prove that both endpoints belonged to the same tenant when the edge was created.
+
+A relation cannot point to itself, duplicate an existing logical edge of the same type, or cross a tenant boundary.
+
+See ADR-005 for the anchoring decision.
 
 ### Policy
 

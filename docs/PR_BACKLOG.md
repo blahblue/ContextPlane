@@ -80,6 +80,8 @@ Acceptance:
 
 ### PR-006 — Typed context relations
 
+**Status:** verified
+
 Dependencies: PR-003
 
 Acceptance:
