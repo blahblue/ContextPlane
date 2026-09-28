@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from uuid import uuid4
 
 import pytest
 from sqlalchemy import select
@@ -205,7 +206,7 @@ def test_database_prevents_two_successors_for_one_version() -> None:
             session.add(ContextItemRecord(**common))
             session.add(
                 ContextItemRecord(
-                    **{**common, "id": None, "checksum": "6" * 64},
+                    **{**common, "id": uuid4(), "checksum": "6" * 64},
                 )
             )
 
@@ -239,5 +240,82 @@ def test_history_never_crosses_tenant_boundary() -> None:
                 )
             ).all()
             assert len(rows) == 1
+    finally:
+        engine.dispose()
+
+
+@pytest.mark.integration
+def test_database_rejects_cross_tenant_lineage_even_with_direct_insert() -> None:
+    engine = build_engine(Settings())
+
+    try:
+        with Session(engine) as session:
+            parent = create_context_item(
+                session,
+                item(tenant_id="lineage-a", checksum="8" * 64),
+            )
+            parent_id = parent.id
+            logical_id = parent.logical_id
+            session.commit()
+
+        with Session(engine) as session:
+            session.add(
+                ContextItemRecord(
+                    id=uuid4(),
+                    logical_id=logical_id,
+                    supersedes_id=parent_id,
+                    key="security.pii.logging",
+                    value={"allowed": True},
+                    domain="security",
+                    tenant_id="lineage-b",
+                    owner="security-team",
+                    source_type="manual",
+                    source_identifier="cross-tenant-attempt",
+                    authority_level="mandatory_control",
+                    version=2,
+                    effective_from=datetime(2026, 9, 28, tzinfo=UTC),
+                    sensitivity="internal",
+                    override_policy="deny",
+                    checksum="9" * 64,
+                )
+            )
+
+            with pytest.raises(IntegrityError):
+                session.commit()
+            session.rollback()
+    finally:
+        engine.dispose()
+
+
+@pytest.mark.integration
+def test_database_rejects_non_root_version_without_predecessor() -> None:
+    engine = build_engine(Settings())
+
+    try:
+        with Session(engine) as session:
+            session.add(
+                ContextItemRecord(
+                    id=uuid4(),
+                    logical_id=uuid4(),
+                    supersedes_id=None,
+                    key="engineering.api.versioning",
+                    value={"scheme": "semantic"},
+                    domain="engineering",
+                    tenant_id="lineage-shape",
+                    owner="architecture-team",
+                    source_type="manual",
+                    source_identifier="invalid-version-shape",
+                    authority_level="standard",
+                    version=2,
+                    effective_from=datetime(2026, 9, 28, tzinfo=UTC),
+                    sensitivity="internal",
+                    override_policy="deny",
+                    checksum="0" * 64,
+                )
+            )
+
+            with pytest.raises(IntegrityError):
+                session.commit()
+            session.rollback()
     finally:
         engine.dispose()
