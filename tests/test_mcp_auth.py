@@ -77,3 +77,32 @@ def test_mcp_token_verifier_rejects_invalid_entra_token() -> None:
     _, public_key = keypair()
 
     assert asyncio.run(verifier(public_key).verify_token("not-a-jwt")) is None
+
+
+def test_mcp_token_verifier_rejects_token_without_resolve_permission() -> None:
+    private_key, public_key = keypair()
+    raw_token = jwt.encode(
+        claims(scp=None, roles=["Context.Reader"]),
+        private_key,
+        algorithm="RS256",
+    )
+
+    assert asyncio.run(verifier(public_key).verify_token(raw_token)) is None
+
+
+def test_mcp_token_verifier_accepts_app_role_as_resolve_permission() -> None:
+    private_key, public_key = keypair()
+    raw_token = jwt.encode(
+        claims(
+            scp=None,
+            idtyp="app",
+            roles=["context.resolve"],
+        ),
+        private_key,
+        algorithm="RS256",
+    )
+
+    access_token = asyncio.run(verifier(public_key).verify_token(raw_token))
+
+    assert access_token is not None
+    assert "context.resolve" in access_token.scopes
