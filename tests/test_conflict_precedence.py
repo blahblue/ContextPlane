@@ -341,11 +341,11 @@ def test_full_authority_and_override_matrix(
         expected = narrow
     elif broad_authority is AuthorityLevel.MANDATORY_CONTROL:
         expected = broad
-    elif _AUTHORITY_ORDER.index(narrow_authority) > _AUTHORITY_ORDER.index(
-        broad_authority
+    elif (
+        _AUTHORITY_ORDER.index(narrow_authority)
+        > _AUTHORITY_ORDER.index(broad_authority)
+        or broad_override is OverridePolicy.ALLOW
     ):
-        expected = narrow
-    elif broad_override is OverridePolicy.ALLOW:
         expected = narrow
     else:
         expected = broad
