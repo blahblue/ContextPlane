@@ -382,3 +382,86 @@ def test_candidate_order_is_deterministic() -> None:
         assert len(first.explanations) == len(first.candidates)
     finally:
         engine.dispose()
+
+
+@pytest.mark.integration
+def test_expired_newer_version_does_not_reactivate_older_version() -> None:
+    engine = build_engine(Settings())
+    tenant_id = f"resolver-no-reactivation-{uuid4()}"
+
+    try:
+        with Session(engine) as session:
+            first = create_context_item(
+                session,
+                item(
+                    tenant_id=tenant_id,
+                    key="security.retired",
+                    checksum="9" * 64,
+                    domain=ContextDomain.SECURITY,
+                    value={"rule": "old"},
+                ),
+            )
+            first_id = first.id
+            session.commit()
+
+        with Session(engine) as session:
+            supersede_context_item(
+                session,
+                tenant_id=tenant_id,
+                previous_id=first_id,
+                replacement=item(
+                    tenant_id=tenant_id,
+                    key="security.retired",
+                    checksum="0" * 64,
+                    domain=ContextDomain.SECURITY,
+                    effective_from=NOW - timedelta(hours=2),
+                    effective_to=NOW - timedelta(hours=1),
+                    value={"rule": "retired"},
+                ),
+            )
+            session.commit()
+
+        with Session(engine) as session:
+            result = resolve_context_candidates(
+                session,
+                ContextResolutionRequest(
+                    scope=ContextScope(tenant_id=tenant_id),
+                    as_of=NOW,
+                ),
+            )
+
+        assert result.candidates == ()
+    finally:
+        engine.dispose()
+
+
+@pytest.mark.integration
+def test_explicit_empty_domain_filter_returns_no_context() -> None:
+    engine = build_engine(Settings())
+    tenant_id = f"resolver-empty-domain-{uuid4()}"
+
+    try:
+        with Session(engine) as session:
+            create_context_item(
+                session,
+                item(
+                    tenant_id=tenant_id,
+                    key="engineering.should-not-return",
+                    checksum="a1" * 32,
+                ),
+            )
+            session.commit()
+
+        with Session(engine) as session:
+            result = resolve_context_candidates(
+                session,
+                ContextResolutionRequest(
+                    scope=ContextScope(tenant_id=tenant_id),
+                    domains=frozenset(),
+                    as_of=NOW,
+                ),
+            )
+
+        assert result.candidates == ()
+    finally:
+        engine.dispose()
