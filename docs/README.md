@@ -13,6 +13,7 @@ This directory contains the public technical design for ContextPlane.
 - [Feature map](FEATURE_MAP.md)
 - [Seed file format](SEED_FORMAT.md)
 - [Verification loop](VERIFICATION.md)
+- [MCP server](MCP.md)
 - [Architecture decision records](adr/)
 
 Repository-level security material:
