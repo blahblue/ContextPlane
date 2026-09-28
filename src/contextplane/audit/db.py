@@ -52,7 +52,7 @@ class ResolutionAuditRecord(Base):
 
     considered_record_ids: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
     returned_items: Mapped[list[dict[str, object]]] = mapped_column(JSONB, nullable=False)
-    conflict_step_record_ids: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
+    conflict_steps: Mapped[list[dict[str, str]]] = mapped_column(JSONB, nullable=False)
 
     outcome: Mapped[str] = mapped_column(String(32), nullable=False)
     error_code: Mapped[str | None] = mapped_column(String(512), nullable=True)
