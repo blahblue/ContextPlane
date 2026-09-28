@@ -150,20 +150,23 @@ def test_mcp_resolve_context_returns_same_runtime_contract_and_audits(engine) ->
     ]
 
 
-def test_mcp_extra_identity_argument_is_rejected_by_tool_schema(engine) -> None:
+def test_mcp_extra_identity_argument_cannot_override_authenticated_principal(engine) -> None:
     tenant_id = f"mcp-injection-{uuid4()}"
     server = build_test_server(engine, tenant_id)
 
-    with pytest.raises(ToolError):
-        asyncio.run(
-            server.call_tool(
-                "resolve_context",
-                {
-                    "domains": ["engineering"],
-                    "tenant_id": "attacker-tenant",
-                },
-            )
+    result = asyncio.run(
+        server.call_tool(
+            "resolve_context",
+            {
+                "domains": ["engineering"],
+                "tenant_id": "attacker-tenant",
+                "user_id": "attacker-user",
+            },
         )
+    )
+
+    assert result.structured_content is not None
+    assert result.structured_content["tenant_id"] == tenant_id
 
 
 def test_mcp_governance_conflict_returns_safe_tool_error(engine) -> None:
