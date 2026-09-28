@@ -29,8 +29,6 @@ class ResolveContextRequest(BaseModel):
 
     domains: frozenset[ContextDomain] = Field(min_length=1)
     keys: frozenset[NonEmptySelector] | None = None
-    repository: NonEmptySelector | None = None
-    resource: NonEmptySelector | None = None
     task: NonEmptySelector | None = None
     audience: NonEmptySelector | None = None
     environment: NonEmptySelector | None = None
