@@ -60,6 +60,10 @@ def upgrade() -> None:
             "outcome IN ('allowed','narrowed','denied','conflict','policy_error')",
             name="ck_resolution_audit_outcome",
         ),
+        sa.CheckConstraint(
+            "requested_key_count >= 0",
+            name="ck_resolution_audit_requested_key_count_nonnegative",
+        ),
         sa.PrimaryKeyConstraint("resolution_id"),
     )
     op.create_index(
