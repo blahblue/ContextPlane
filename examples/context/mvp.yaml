@@ -1,0 +1,64 @@
+items:
+  - key: brand.primary_color
+    value:
+      hex: "#2563EB"
+    domain: brand
+    scope:
+      tenant_id: demo-org
+      audience: external
+    owner: brand-team
+    source:
+      type: manual
+      identifier: mvp-brand-primary-color
+    authority_level: standard
+    effective_from: "2026-09-28T00:00:00Z"
+    sensitivity: internal
+    override_policy: deny
+
+  - key: presentation.executive.max_bullets
+    value:
+      count: 5
+    domain: presentation
+    scope:
+      tenant_id: demo-org
+      audience: executive
+    owner: communications-team
+    source:
+      type: manual
+      identifier: mvp-presentation-max-bullets
+    authority_level: recommendation
+    effective_from: "2026-09-28T00:00:00Z"
+    sensitivity: internal
+    override_policy: allow
+
+  - key: engineering.api.versioning
+    value:
+      scheme: semantic
+    domain: engineering
+    scope:
+      tenant_id: demo-org
+      environment: production
+    owner: architecture-team
+    source:
+      type: manual
+      identifier: mvp-engineering-api-versioning
+    authority_level: standard
+    effective_from: "2026-09-28T00:00:00Z"
+    sensitivity: internal
+    override_policy: deny
+
+  - key: security.pii.logging
+    value:
+      allowed: false
+    domain: security
+    scope:
+      tenant_id: demo-org
+      environment: production
+    owner: security-team
+    source:
+      type: manual
+      identifier: mvp-security-pii-logging
+    authority_level: mandatory_control
+    effective_from: "2026-09-28T00:00:00Z"
+    sensitivity: restricted
+    override_policy: deny
