@@ -10,6 +10,7 @@ This directory contains the public technical design for ContextPlane.
 - [Implementation plan](IMPLEMENTATION_PLAN.md)
 - [PR backlog](PR_BACKLOG.md)
 - [Feature map](FEATURE_MAP.md)
+- [Seed file format](SEED_FORMAT.md)
 - [Verification loop](VERIFICATION.md)
 - [Architecture decision records](adr/)
 
