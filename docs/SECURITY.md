@@ -84,14 +84,24 @@ See ADR-008 for the exact semantics.
 
 ## Entra reference path
 
-For the MVP:
+The reference Entra adapter keeps Microsoft-specific claims outside core policy and resolver code.
+
+For the current MVP:
 
 1. register ContextPlane as a protected API;
-2. accept Entra-issued tokens;
-3. validate issuer, audience, signature, expiry, tenant, scopes/roles;
-4. resolve groups/roles only when needed;
-5. represent agent identity separately where available;
-6. audit user, agent, application, decision, returned context IDs, and policy versions.
+2. accept an access token issued for the configured tenant and audience;
+3. validate signature, issuer, audience, expiry/issued-at, and tenant;
+4. map immutable `tid + oid` into the normalized principal;
+5. preserve the calling application through `azp` or `appid`;
+6. map delegated `scp`, application/user `roles`, and complete `groups` claims;
+7. distinguish user, service, and Entra Agent ID principals;
+8. fail closed on group-overage claims until Microsoft Graph membership expansion exists.
+
+Mutable claims such as email, UPN, display name, and preferred username must not be used as authorization identity.
+
+The current reference validator pins an RSA public key for deterministic local testing. Production-style JWKS discovery/rotation and Conditional Access claims-challenge handling are intentionally deferred.
+
+See ADR-010 for the mapping semantics.
 
 ## Prompt injection rule
 
