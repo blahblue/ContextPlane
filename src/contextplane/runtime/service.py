@@ -11,7 +11,7 @@ from contextplane.audit import (
     build_resolution_audit,
     create_resolution_audit,
 )
-from contextplane.auth import Principal, PrincipalKind
+from contextplane.auth import Principal, PrincipalKind, principal_has_permission
 from contextplane.cache import (
     InMemoryResolutionCache,
     build_resolution_cache_key,
@@ -48,6 +48,10 @@ class RuntimeResolutionError(RuntimeError):
     def __init__(self, message: str, *, resolution_id: UUID) -> None:
         super().__init__(message)
         self.resolution_id = resolution_id
+
+
+class RuntimeAuthorizationError(RuntimeResolutionError):
+    """Raised when an authenticated principal lacks runtime resolve permission."""
 
 
 class RuntimePolicyConfigurationError(RuntimeResolutionError):
@@ -154,6 +158,13 @@ def resolve_context_runtime(
     """Execute the transport-neutral ContextPlane resolution pipeline."""
     evaluated_at = as_of or datetime.now(UTC)
     correlation_id = resolution_id or uuid4()
+
+    if not principal_has_permission(principal, "context.resolve"):
+        raise RuntimeAuthorizationError(
+            "insufficient permission",
+            resolution_id=correlation_id,
+        )
+
     selector_dimensions = _selector_dimensions(request)
 
     try:
