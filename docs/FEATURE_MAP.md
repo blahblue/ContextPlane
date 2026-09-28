@@ -26,7 +26,7 @@ Status values: **planned**, **partial**, **implemented**, **verified**, **deferr
 | Identity | OIDC | Yes | verified | RS256 issuer/audience/time/signature + malformed-claim tests |
 | Identity | Entra adapter | Yes | verified | tid/oid/azp-appid mapping + agent/group-overage adversarial tests |
 | Identity | Agent identity | Yes | verified | user/agent/service separation + client ID requirement |
-| Runtime | REST resolver | Yes | planned | end-to-end |
+| Runtime | REST resolver | Yes | verified | auth + policy + resolver + precedence + provenance E2E |
 | Runtime | MCP server | Yes | planned | MCP contract tests |
 | Runtime | Python SDK | Yes | planned | SDK integration |
 | Audit | Resolution log | Yes | planned | audit completeness |
