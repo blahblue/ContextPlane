@@ -4,6 +4,7 @@ from typing import Annotated, Any
 
 import jwt
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, ValidationError
+
 from contextplane.auth.domain import Principal, PrincipalKind
 
 NonEmptyOIDCString = Annotated[
@@ -35,7 +36,9 @@ def _string_set_claim(
     raw = claims.get(name)
     if raw is None:
         return frozenset()
-    if not isinstance(raw, list) or any(not isinstance(item, str) or not item.strip() for item in raw):
+    if not isinstance(raw, list) or any(
+        not isinstance(item, str) or not item.strip() for item in raw
+    ):
         raise ValueError(f"{name} must be an array of non-empty strings")
     return frozenset(item.strip() for item in raw)
 
@@ -90,5 +93,5 @@ class StaticKeyOIDCValidator:
                 },
             )
             return principal_from_oidc_claims(claims)
-        except (jwt.PyJWTError, ValidationError, ValueError, TypeError) as exc:
+        except (jwt.PyJWTError, ValidationError, ValueError, TypeError):
             raise AuthenticationError("token validation failed") from None
