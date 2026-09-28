@@ -12,7 +12,6 @@ from pydantic import AnyHttpUrl
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from contextplane.api.domain import ResolveContextRequest, ResolveContextResponse
 from contextplane.auth import (
     AuthenticationError,
     EntraValidatorConfig,
@@ -24,6 +23,8 @@ from contextplane.context_registry.domain import ContextDomain
 from contextplane.database import build_engine
 from contextplane.policy import PolicyRule
 from contextplane.runtime import (
+    ResolveContextRequest,
+    ResolveContextResponse,
     RuntimeGovernanceConflictError,
     RuntimePolicyConfigurationError,
     resolve_context_runtime,
