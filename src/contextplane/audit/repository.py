@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from sqlalchemy import or_, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from contextplane.audit.db import ResolutionAuditRecord
