@@ -114,14 +114,13 @@ def test_already_superseded_version_cannot_fork() -> None:
             )
             session.commit()
 
-        with Session(engine) as session:
-            with pytest.raises(ContextVersionConflictError):
-                supersede_context_item(
-                    session,
-                    tenant_id="acme",
-                    previous_id=first_id,
-                    replacement=item(allowed=False, checksum="e" * 64),
-                )
+        with Session(engine) as session, pytest.raises(ContextVersionConflictError):
+            supersede_context_item(
+                session,
+                tenant_id="acme",
+                previous_id=first_id,
+                replacement=item(allowed=False, checksum="e" * 64),
+            )
     finally:
         engine.dispose()
 
@@ -136,14 +135,13 @@ def test_supersession_is_tenant_scoped() -> None:
             first_id = first.id
             session.commit()
 
-        with Session(engine) as session:
-            with pytest.raises(ContextItemNotFoundError):
-                supersede_context_item(
-                    session,
-                    tenant_id="tenant-b",
-                    previous_id=first_id,
-                    replacement=item(tenant_id="tenant-b", checksum="1" * 64),
-                )
+        with Session(engine) as session, pytest.raises(ContextItemNotFoundError):
+            supersede_context_item(
+                session,
+                tenant_id="tenant-b",
+                previous_id=first_id,
+                replacement=item(tenant_id="tenant-b", checksum="1" * 64),
+            )
     finally:
         engine.dispose()
 
@@ -158,17 +156,16 @@ def test_replacement_cannot_change_logical_identity() -> None:
             first_id = first.id
             session.commit()
 
-        with Session(engine) as session:
-            with pytest.raises(ContextIdentityMismatchError):
-                supersede_context_item(
-                    session,
-                    tenant_id="acme",
-                    previous_id=first_id,
-                    replacement=item(
-                        key="security.other",
-                        checksum="3" * 64,
-                    ),
-                )
+        with Session(engine) as session, pytest.raises(ContextIdentityMismatchError):
+            supersede_context_item(
+                session,
+                tenant_id="acme",
+                previous_id=first_id,
+                replacement=item(
+                    key="security.other",
+                    checksum="3" * 64,
+                ),
+            )
     finally:
         engine.dispose()
 
