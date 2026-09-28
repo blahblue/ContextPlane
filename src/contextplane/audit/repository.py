@@ -22,8 +22,8 @@ def create_resolution_audit(
         client_id=audit.client_id,
         as_of=audit.as_of,
         requested_domains=[domain.value for domain in audit.requested_domains],
-        requested_key_hashes=list(audit.requested_key_hashes),
-        selector_hashes=dict(audit.selector_hashes),
+        requested_key_count=audit.requested_key_count,
+        selector_dimensions=list(audit.selector_dimensions),
         policy_decision=(
             audit.policy_decision.value if audit.policy_decision is not None else None
         ),
