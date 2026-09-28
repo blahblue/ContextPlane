@@ -53,17 +53,29 @@ def _scope_claim(claims: dict[str, Any]) -> frozenset[str]:
     return frozenset(part for part in raw.split() if part)
 
 
+def _required_string_claim(claims: dict[str, Any], name: str) -> str:
+    """Read one required non-empty string identity claim."""
+    raw = claims.get(name)
+    if not isinstance(raw, str) or not raw.strip():
+        raise ValueError(f"{name} must be a non-empty string")
+    return raw.strip()
+
+
 def principal_from_oidc_claims(claims: dict[str, Any]) -> Principal:
     """Normalize validated generic OIDC claims into a ContextPlane principal."""
-    raw_kind = claims.get("principal_type")
+    tenant_id = _required_string_claim(claims, "tenant_id")
+    subject = _required_string_claim(claims, "sub")
+    raw_kind = _required_string_claim(claims, "principal_type")
     raw_client_id = claims.get("client_id")
 
-    if raw_client_id is not None and not isinstance(raw_client_id, str):
-        raise ValueError("client_id must be a string")
+    if raw_client_id is not None:
+        if not isinstance(raw_client_id, str) or not raw_client_id.strip():
+            raise ValueError("client_id must be a non-empty string")
+        raw_client_id = raw_client_id.strip()
 
     return Principal(
-        tenant_id=claims.get("tenant_id"),
-        subject=claims.get("sub"),
+        tenant_id=tenant_id,
+        subject=subject,
         kind=PrincipalKind(raw_kind),
         client_id=raw_client_id,
         roles=_string_set_claim(claims, "roles"),
