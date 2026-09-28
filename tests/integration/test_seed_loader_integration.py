@@ -97,14 +97,19 @@ def test_changed_seed_content_creates_new_immutable_version(tmp_path: Path) -> N
                     .order_by(ContextItemRecord.version)
                 )
             )
+            version_snapshot = [
+                (record.version, record.value)
+                for record in versions
+            ]
             session.commit()
 
         assert original.version == 1
         assert changed_result.status == "superseded"
         assert changed_result.version == 2
         assert changed_result.checksum != original.checksum
-        assert [record.version for record in versions] == [1, 2]
-        assert versions[0].value == {"scheme": "semantic"}
-        assert versions[1].value == {"scheme": "calendar"}
+        assert version_snapshot == [
+            (1, {"scheme": "semantic"}),
+            (2, {"scheme": "calendar"}),
+        ]
     finally:
         engine.dispose()
