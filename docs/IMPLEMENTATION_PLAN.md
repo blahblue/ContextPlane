@@ -4,20 +4,26 @@ The implementation should follow a verification-first sequence.
 
 ## Phase 0 — Foundation
 
+**Status: verified in PR-001.**
+
 Deliver:
 
 - Python project scaffold;
 - FastAPI health endpoint;
-- PostgreSQL + migrations;
 - Docker Compose;
 - GitHub Actions;
 - lint/type/test configuration.
 
-Exit gate: clean clone -> one documented command starts the system and CI passes.
+Exit gate: clean clone -> one documented command starts the service and CI passes.
 
-## Phase 1 — Context registry
+Verification: GitHub Actions run 36442725339 passed install, lint, strict type-checking, and tests. A stranger-diff review also resulted in a non-root container hardening change.
+
+## Phase 1 — Persistence + context registry
 
 Deliver:
+
+- PostgreSQL service and application database configuration;
+- Alembic migrations;
 
 - ContextItem schema;
 - Scope schema;
