@@ -22,6 +22,8 @@ Context Graph
   v
 Context Resolver ---- Audit Logger
   |
+  +---- Resolution Cache
+  |
   +---- MCP
   +---- REST
   +---- SDK
@@ -73,10 +75,11 @@ src/
 2. Gateway validates user and/or agent identity.
 3. Identity resolver maps claims to the internal principal model.
 4. Policy engine determines allowed scopes and controls.
-5. Resolver queries applicable context candidates.
-6. Conflict/precedence rules produce the effective set.
-7. Gateway writes an immutable audit record.
-8. Gateway returns a compact context bundle, policy decision, provenance, and explanation trace.
+5. Gateway reads the tenant context revision and next effective-time boundary.
+6. Candidate resolver uses an identity/version-aware cache or queries applicable context candidates.
+7. Conflict/precedence rules produce the effective set.
+8. Gateway loads current provenance and writes a new immutable audit record.
+9. Gateway returns a compact context bundle, policy decision, provenance, and explanation trace.
 
 ## Context resolution dimensions
 
@@ -109,6 +112,14 @@ Suggested precedence:
 4. source authority;
 5. effective date/version;
 6. user preference only where override is permitted.
+
+## Resolution cache boundary
+
+The reference cache stores candidate-resolution results only. Cache reuse requires identical principal/request state, context revision, and policy fingerprint, and entries expire before the next known context effective-time transition.
+
+Policy evaluation, precedence, provenance, and audit creation still run on every request. The reference implementation is bounded and process-local; a distributed cache must preserve the same invariants.
+
+See ADR-013 for the exact cache key and invalidation model.
 
 ## Mandatory context vs. hard enforcement
 
