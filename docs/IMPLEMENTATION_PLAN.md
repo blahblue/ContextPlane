@@ -20,6 +20,10 @@ Verification: GitHub Actions run 36442725339 passed install, lint, strict type-c
 
 ## Phase 1 — Persistence + context registry
 
+**Persistence foundation status: verified in PR-002. Context registry work remains planned for PR-003 through PR-005.**
+
+Persistence verification: migrations applied to an empty PostgreSQL 16 service in GitHub Actions; configuration validation and real-database readiness tests passed.
+
 Deliver:
 
 - PostgreSQL service and application database configuration;
