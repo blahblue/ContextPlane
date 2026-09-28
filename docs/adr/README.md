@@ -11,6 +11,7 @@ Current ADRs:
 - [ADR-005 — Relations target logical context identities with immutable version anchors](005-logical-relation-anchors.md)
 - [ADR-006 — Resolve version applicability before scope specificity](006-resolution-version-scope-order.md)
 - [ADR-007 — Resolve context conflicts with authority, specificity, and explicit override](007-conflict-precedence.md)
+- [ADR-008 — Separate domain admission from monotonic key narrowing](008-policy-admission-narrowing.md)
 
 New ADRs should use a short sequential number and include:
 
