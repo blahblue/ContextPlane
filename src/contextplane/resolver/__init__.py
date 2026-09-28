@@ -6,6 +6,7 @@ from contextplane.resolver.domain import (
     ContextResolutionRequest,
     ContextResolutionResult,
     ConflictDecision,
+    ConflictStep,
     EffectiveContextResult,
 )
 from contextplane.resolver.precedence import (ContextPrecedenceConflictError, apply_conflict_precedence)
@@ -17,6 +18,7 @@ __all__ = [
     "ContextResolutionRequest",
     "ContextResolutionResult",
     "ConflictDecision",
+    "ConflictStep",
     "EffectiveContextResult",
     "ContextPrecedenceConflictError",
     "apply_conflict_precedence",
