@@ -171,7 +171,20 @@ Mitigations:
 - resolution audits omit bearer tokens, raw context payloads, selector values, and source URIs;
 - redact sensitive logs.
 
-### T12 — Mandatory-context illusion
+### T12 — MCP identity injection or transport confusion
+
+**Threat:** A model attempts to select its own tenant/user/agent identity through tool arguments, or an operator assumes stdio/in-process MCP is protected by HTTP bearer authentication.
+
+**Mitigations:**
+- identity fields are absent from the `resolve_context` tool schema;
+- remote identity is derived only from the verified MCP access-token context;
+- extra model-supplied identity-like arguments cannot change the normalized Principal;
+- Entra validation is reused rather than reimplemented;
+- `context.resolve` permission is required for the remote MCP resource server;
+- legacy Streamable HTTP is served statelessly;
+- documentation explicitly defines stdio/in-process security as the process boundary.
+
+### T13 — Mandatory-context illusion
 
 Users assume a “mandatory” instruction guarantees downstream model compliance.
 
@@ -198,6 +211,9 @@ The MVP should include tests for:
 - over-retrieval;
 - context poisoning;
 - mandatory-control override attempts;
+- MCP identity-like argument injection;
+- MCP token without context.resolve permission;
+- MCP invalid bearer token;
 - audit update/delete attempts;
 - cross-actor audit lookup;
 - audit payload minimization.
