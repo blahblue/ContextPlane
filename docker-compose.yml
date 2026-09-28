@@ -2,11 +2,15 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: contextplane
-      POSTGRES_USER: contextplane
-      POSTGRES_PASSWORD: contextplane
+      POSTGRES_DB: ${CONTEXTPLANE_DB_NAME}
+      POSTGRES_USER: ${CONTEXTPLANE_DB_USER}
+      POSTGRES_PASSWORD: ${CONTEXTPLANE_DB_PASSWORD}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U contextplane -d contextplane"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${CONTEXTPLANE_DB_USER} -d ${CONTEXTPLANE_DB_NAME}",
+        ]
       interval: 2s
       timeout: 3s
       retries: 15
@@ -17,7 +21,8 @@ services:
     build:
       context: .
     environment:
-      CONTEXTPLANE_DATABASE_URL: postgresql+psycopg://contextplane:contextplane@postgres:5432/contextplane
+      CONTEXTPLANE_DATABASE_URL: >-
+        postgresql+psycopg://${CONTEXTPLANE_DB_USER}:${CONTEXTPLANE_DB_PASSWORD}@postgres:5432/${CONTEXTPLANE_DB_NAME}
     depends_on:
       postgres:
         condition: service_healthy
