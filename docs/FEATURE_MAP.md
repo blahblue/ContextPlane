@@ -23,9 +23,9 @@ Status values: **planned**, **partial**, **implemented**, **verified**, **deferr
 | Resolver | Explanation trace | Yes | verified | deterministic candidate explanations |
 | Policy | Allow / deny | Yes | verified | authority admission + deny-safe tie tests |
 | Policy | Mandatory controls | Yes | verified | mandatory allow/deny authority tests |
-| Identity | OIDC | Yes | planned | token validation |
+| Identity | OIDC | Yes | implemented | RS256 issuer/audience/time/signature tests |
 | Identity | Entra adapter | Yes | planned | tenant fixture |
-| Identity | Agent identity | Yes | planned | user/agent separation |
+| Identity | Agent identity | Yes | implemented | user/agent/service separation + client ID requirement |
 | Runtime | REST resolver | Yes | planned | end-to-end |
 | Runtime | MCP server | Yes | planned | MCP contract tests |
 | Runtime | Python SDK | Yes | planned | SDK integration |
