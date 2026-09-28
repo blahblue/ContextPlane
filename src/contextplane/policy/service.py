@@ -94,7 +94,8 @@ def evaluate_policy(
     narrowing = [
         rule
         for rule in policy_rules
-        if rule.effect is PolicyEffect.NARROW
+        if allowed_domains
+        and rule.effect is PolicyEffect.NARROW
         and (
             rule.target_domains is None
             or bool(rule.target_domains.intersection(allowed_domains))
@@ -128,6 +129,8 @@ def evaluate_policy(
 
     if request.requested_domains and not allowed_domains:
         decision = PolicyDecisionKind.DENY
+        if request.requested_keys is not None:
+            allowed_keys = frozenset()
     elif denied_domains or narrowing:
         decision = PolicyDecisionKind.NARROW
     else:
