@@ -111,6 +111,8 @@ Acceptance:
 
 ### PR-009 — Policy evaluator
 
+**Status:** verified
+
 Dependencies: PR-008
 
 Acceptance:
