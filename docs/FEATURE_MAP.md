@@ -29,7 +29,7 @@ Status values: **planned**, **partial**, **implemented**, **verified**, **deferr
 | Runtime | REST resolver | Yes | verified | auth + policy + resolver + precedence + provenance E2E |
 | Runtime | MCP server | Yes | planned | MCP contract tests |
 | Runtime | Python SDK | Yes | planned | SDK integration |
-| Audit | Resolution log | Yes | planned | audit completeness |
+| Audit | Resolution log | Yes | verified | append-only DB trigger + success/deny/conflict + actor-scoped lookup tests |
 | Client | Coding-agent demo | Yes | planned | reproducible scenario |
 | Client | Copilot Studio demo | Yes | planned | reproducible scenario |
 | Sources | YAML seed | Yes | verified | canonical checksum + idempotency + immutable supersession |

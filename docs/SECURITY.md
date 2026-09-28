@@ -116,6 +116,18 @@ Runtime provenance intentionally omits raw source URIs. The API returns enough p
 
 See ADR-011 for the transport-boundary decision.
 
+## Resolution audit boundary
+
+Handled authenticated resolve outcomes are assigned a unique resolution ID and persisted before the runtime response is finalized.
+
+The audit record is intentionally payload-minimized. It stores decision metadata and immutable context-version references, but not bearer tokens, raw context values, prompt text, source URIs, policy bodies, or task/audience/environment values.
+
+PostgreSQL rejects ordinary UPDATE and DELETE operations on resolution audit rows. The initial lookup endpoint is further restricted to the exact tenant, subject, principal kind, and client identity that created the record; mismatches return 404.
+
+Audit rows still contain enterprise identifiers and must be treated as sensitive operational data. The database trigger is not a claim of tamper-proof storage against a database owner. External WORM/SIEM sinks and retention policy are deferred.
+
+See ADR-012 for the audit-storage decision.
+
 ## Prompt injection rule
 
 Source text is untrusted content even when the source system is trusted.

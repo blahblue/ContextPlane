@@ -149,10 +149,13 @@ A privileged actor alters decision history.
 
 Mitigations:
 
-- append-only audit design;
-- restricted write path;
-- external log sink in enterprise deployments;
-- include resolution IDs and hashes.
+- append-only PostgreSQL audit design;
+- database trigger rejects ordinary UPDATE and DELETE operations;
+- exact-actor lookup scope;
+- payload-minimized audit schema;
+- resolution IDs correlate runtime outcomes to stored records.
+
+Future hardening includes external WORM/SIEM sinks and cryptographic log chaining.
 
 ### T11 — Secret exposure
 
@@ -162,6 +165,7 @@ Mitigations:
 
 - store references, not secret values;
 - use enterprise secret stores;
+- resolution audits omit bearer tokens, raw context payloads, selector values, and source URIs;
 - redact sensitive logs.
 
 ### T12 — Mandatory-context illusion
@@ -187,4 +191,7 @@ The MVP should include tests for:
 - cache-key isolation;
 - over-retrieval;
 - context poisoning;
-- mandatory-control override attempts.
+- mandatory-control override attempts;
+- audit update/delete attempts;
+- cross-actor audit lookup;
+- audit payload minimization.
