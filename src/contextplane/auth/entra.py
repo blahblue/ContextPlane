@@ -116,6 +116,8 @@ def principal_from_entra_claims(
     actor_function = _optional_string(claims, "xms_act_fct")
 
     if idtyp == "app":
+        if actor_function == "11" and subject_function not in {None, "11"}:
+            raise ValueError("agent actor and subject function claims disagree")
         kind = (
             PrincipalKind.AGENT
             if subject_function == "11" or actor_function == "11"
