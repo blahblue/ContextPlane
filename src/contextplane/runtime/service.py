@@ -6,7 +6,7 @@ from uuid import UUID, uuid4
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from contextplane.api.domain import (
+from contextplane.runtime.domain import (
     ContextProvenance,
     EffectiveContextItem,
     ResolveContextRequest,
