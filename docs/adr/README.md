@@ -16,6 +16,7 @@ Current ADRs:
 - [ADR-010 — Map Microsoft Entra access tokens to immutable ContextPlane identity](010-entra-claim-mapping.md)
 - [ADR-011 — Derive runtime identity scope from the authenticated principal](011-runtime-identity-scope.md)
 - [ADR-012 — Persist resolution audits as append-only, payload-minimized records](012-append-only-resolution-audit.md)
+- [ADR-013 — Cache candidate resolution only across identical identity and version state](013-resolution-cache-boundary.md)
 
 New ADRs should use a short sequential number and include:
 

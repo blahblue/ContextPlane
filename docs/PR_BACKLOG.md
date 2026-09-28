@@ -168,6 +168,8 @@ Acceptance:
 
 ### PR-014 — Cache boundary
 
+**Status:** verified
+
 Dependencies: PR-012
 
 Acceptance:

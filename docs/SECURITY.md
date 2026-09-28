@@ -128,6 +128,20 @@ Audit rows still contain enterprise identifiers and must be treated as sensitive
 
 See ADR-012 for the audit-storage decision.
 
+## Cache isolation boundary
+
+Candidate-resolution caching is scoped by an opaque digest over authenticated principal state, resolver scope, tenant context revision, and configured policy fingerprint.
+
+The key includes tenant, subject, principal kind, client identity, roles, groups, and scopes, so the reference cache does not intentionally reuse candidate results across authorization-relevant identities.
+
+PostgreSQL maintains a monotonic tenant context revision and bumps it on every context-item INSERT, UPDATE, or DELETE. This makes authoritative data mutation select a new cache key without relying on process-local invalidation events.
+
+Because context applicability can change solely with time, each entry also expires no later than the tenant's next known effective-time boundary.
+
+Only candidate selection is cached. Policy evaluation, precedence, provenance loading, and audit creation remain per-request operations.
+
+Cache values contain resolved organizational context in process memory and therefore remain sensitive runtime data. The current reference cache is bounded and process-local. See ADR-013 for the complete boundary.
+
 ## Prompt injection rule
 
 Source text is untrusted content even when the source system is trusted.
