@@ -6,6 +6,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
+from contextplane.audit.domain import AuditConflictStepRef, AuditContextRef, AuditOutcome
+from contextplane.auth import PrincipalKind
 from contextplane.context_registry.domain import (
     AuthorityLevel,
     ContextDomain,
@@ -77,3 +79,27 @@ class ResolveContextResponse(BaseModel):
     context: tuple[EffectiveContextItem, ...]
     candidate_explanations: tuple[CandidateExplanation, ...]
     conflict_decisions: tuple[ConflictDecision, ...]
+
+
+class ResolutionAuditResponse(BaseModel):
+    """Safe caller-scoped view of one immutable resolution audit."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    resolution_id: UUID
+    tenant_id: str
+    principal_kind: PrincipalKind
+    as_of: datetime
+    requested_domains: tuple[ContextDomain, ...]
+    requested_key_count: int
+    selector_dimensions: tuple[str, ...]
+    policy_decision: str | None
+    allowed_domains: tuple[ContextDomain, ...]
+    denied_domains: tuple[ContextDomain, ...]
+    policy_rule_ids: tuple[str, ...]
+    considered_record_ids: tuple[UUID, ...]
+    returned_items: tuple[AuditContextRef, ...]
+    conflict_steps: tuple[AuditConflictStepRef, ...]
+    outcome: AuditOutcome
+    error_code: str | None
+    created_at: datetime
