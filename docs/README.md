@@ -7,6 +7,7 @@ This directory contains the public technical design for ContextPlane.
 - [Architecture](ARCHITECTURE.md)
 - [Context model](CONTEXT_MODEL.md)
 - [Security model](SECURITY.md)
+- [Runtime resolve API](RUNTIME_API.md)
 - [Implementation plan](IMPLEMENTATION_PLAN.md)
 - [PR backlog](PR_BACKLOG.md)
 - [Feature map](FEATURE_MAP.md)

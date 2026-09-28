@@ -21,6 +21,7 @@ class ContextResolutionRequest(BaseModel):
 
     scope: ContextScope
     domains: frozenset[ContextDomain] | None = None
+    keys: frozenset[str] | None = None
     as_of: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     @field_validator("as_of")

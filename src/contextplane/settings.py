@@ -15,6 +15,11 @@ class Settings(BaseSettings):
 
     database_url: str = ""
 
+    entra_tenant_id: str | None = None
+    entra_issuer: str | None = None
+    entra_audience: str | None = None
+    entra_public_key_pem: str | None = None
+
     @field_validator("database_url")
     @classmethod
     def validate_database_url(cls, value: str) -> str:
