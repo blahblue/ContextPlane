@@ -5,9 +5,10 @@ Revises: 0001
 Create Date: 2026-09-28
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 revision: str = "0002"
 down_revision: str | None = "0001"
@@ -41,7 +42,7 @@ def upgrade() -> None:
         sa.Column("source_identifier", sa.String(length=512), nullable=False),
         sa.Column("source_uri", sa.Text(), nullable=True),
         sa.Column("authority_level", sa.String(length=64), nullable=False),
-        sa.Column("version", sa.Integer(), nullable=False),
+        sa.Column("version", sa.Integer(), server_default=sa.text("1"), nullable=False),
         sa.Column("effective_from", sa.DateTime(timezone=True), nullable=False),
         sa.Column("effective_to", sa.DateTime(timezone=True), nullable=True),
         sa.Column("sensitivity", sa.String(length=64), nullable=False),
@@ -65,6 +66,10 @@ def upgrade() -> None:
             name="ck_context_items_authority",
         ),
         sa.CheckConstraint(
+            "checksum ~ '^[0-9a-f]{64}$'",
+            name="ck_context_items_checksum_sha256",
+        ),
+        sa.CheckConstraint(
             "domain IN ('brand','presentation','engineering','security')",
             name="ck_context_items_domain",
         ),
@@ -77,6 +82,14 @@ def upgrade() -> None:
             name="ck_context_items_exactly_one_payload",
         ),
         sa.CheckConstraint(
+            "length(btrim(key)) > 0",
+            name="ck_context_items_key_nonempty",
+        ),
+        sa.CheckConstraint(
+            "length(btrim(owner)) > 0",
+            name="ck_context_items_owner_nonempty",
+        ),
+        sa.CheckConstraint(
             "override_policy IN ('allow','deny')",
             name="ck_context_items_override_policy",
         ),
@@ -85,9 +98,17 @@ def upgrade() -> None:
             name="ck_context_items_sensitivity",
         ),
         sa.CheckConstraint(
+            "length(btrim(source_identifier)) > 0",
+            name="ck_context_items_source_identifier_nonempty",
+        ),
+        sa.CheckConstraint(
             "source_type IN "
             "('manual','git','sharepoint','google_drive','databricks','fabric','api')",
             name="ck_context_items_source_type",
+        ),
+        sa.CheckConstraint(
+            "length(btrim(tenant_id)) > 0",
+            name="ck_context_items_tenant_nonempty",
         ),
         sa.CheckConstraint("version > 0", name="ck_context_items_version_positive"),
         sa.PrimaryKeyConstraint("id"),
