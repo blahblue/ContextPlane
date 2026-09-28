@@ -12,6 +12,7 @@ from contextplane.api.dependencies import (
     authenticate_principal,
     get_database_session,
     get_policy_rules,
+    get_resolution_cache,
 )
 from contextplane.api.domain import (
     ContextProvenance,
@@ -30,8 +31,14 @@ from contextplane.audit import (
 )
 from contextplane.audit.db import ResolutionAuditRecord
 from contextplane.auth import Principal, PrincipalKind
+from contextplane.cache import (
+    InMemoryResolutionCache,
+    build_resolution_cache_key,
+    fingerprint_policy_rules,
+)
 from contextplane.context_registry.db import ContextItemRecord
 from contextplane.context_registry.domain import ContextDomain, ContextScope, SourceType
+from contextplane.context_registry.state import get_context_state_snapshot
 from contextplane.policy import (
     PolicyDecisionKind,
     PolicyEvaluationRequest,
@@ -178,6 +185,7 @@ def resolve_context(
     principal: Annotated[Principal, Depends(authenticate_principal)],
     session: Annotated[Session, Depends(get_database_session)],
     rules: Annotated[tuple[PolicyRule, ...], Depends(get_policy_rules)],
+    cache: Annotated[InMemoryResolutionCache, Depends(get_resolution_cache)],
 ) -> ResolveContextResponse:
     """Return policy-constrained effective organizational context."""
     as_of = datetime.now(UTC)
@@ -246,7 +254,29 @@ def resolve_context(
         keys=policy.allowed_keys,
         as_of=as_of,
     )
-    resolution = resolve_context_candidates(session, resolution_request)
+    context_state = get_context_state_snapshot(
+        session,
+        tenant_id=principal.tenant_id,
+        as_of=as_of,
+    )
+    cache_key = build_resolution_cache_key(
+        principal=principal,
+        request=resolution_request,
+        context_revision=context_state.revision,
+        policy_fingerprint=fingerprint_policy_rules(rules),
+    )
+    resolution = cache.get(cache_key, now=as_of)
+    if resolution is None:
+        resolution = resolve_context_candidates(session, resolution_request)
+        cache.put(
+            cache_key,
+            resolution,
+            now=as_of,
+            next_transition=context_state.next_transition,
+        )
+    else:
+        resolution = resolution.model_copy(update={"as_of": as_of})
+
     constrained = _apply_policy_filter(
         resolution,
         allowed_keys=policy.allowed_keys,
