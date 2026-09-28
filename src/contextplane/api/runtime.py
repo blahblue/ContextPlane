@@ -29,6 +29,7 @@ from contextplane.cache import InMemoryResolutionCache
 from contextplane.context_registry.domain import ContextDomain
 from contextplane.policy import PolicyRule
 from contextplane.runtime import (
+    RuntimeAuthorizationError,
     RuntimeGovernanceConflictError,
     RuntimePolicyConfigurationError,
     resolve_context_runtime,
@@ -93,6 +94,12 @@ def resolve_context(
             rules=rules,
             cache=cache,
         )
+    except RuntimeAuthorizationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="insufficient permission",
+            headers=_audit_headers(exc.resolution_id),
+        ) from None
     except RuntimePolicyConfigurationError as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
