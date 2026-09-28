@@ -1,6 +1,7 @@
 """FastAPI dependencies for authenticated runtime resolution."""
 
 from collections.abc import Iterator
+from typing import Annotated
 from functools import lru_cache
 
 from fastapi import Depends, HTTPException, status
@@ -71,8 +72,11 @@ def build_principal_validator(settings: Settings) -> PrincipalValidator:
 
 
 def authenticate_principal(
-    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
-    settings: Settings = Depends(get_settings),
+    credentials: Annotated[
+        HTTPAuthorizationCredentials | None,
+        Depends(_bearer),
+    ],
+    settings: Annotated[Settings, Depends(get_settings)],
 ) -> Principal:
     """Validate one bearer token and return the normalized principal."""
     if credentials is None or credentials.scheme.lower() != "bearer":
