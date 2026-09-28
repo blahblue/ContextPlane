@@ -9,7 +9,10 @@ from contextplane.resolver.domain import (
     ConflictStep,
     EffectiveContextResult,
 )
-from contextplane.resolver.precedence import (ContextPrecedenceConflictError, apply_conflict_precedence)
+from contextplane.resolver.precedence import (
+    ContextPrecedenceConflictError,
+    apply_conflict_precedence,
+)
 from contextplane.resolver.service import resolve_context_candidates
 
 __all__ = [
