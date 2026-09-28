@@ -1,7 +1,7 @@
 """Authenticated principal models shared across identity providers."""
 
 from enum import StrEnum
-from typing import Annotated, Self
+from typing import Annotated, Protocol, Self
 
 from pydantic import BaseModel, ConfigDict, StringConstraints, model_validator
 
@@ -38,3 +38,11 @@ class Principal(BaseModel):
         if self.kind in {PrincipalKind.AGENT, PrincipalKind.SERVICE} and self.client_id is None:
             raise ValueError("agent and service principals require client_id")
         return self
+
+
+class PrincipalValidator(Protocol):
+    """Provider-neutral boundary for validating a bearer token."""
+
+    def validate(self, token: str) -> Principal:
+        """Validate a token and return a normalized principal."""
+        ...
