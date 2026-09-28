@@ -32,6 +32,10 @@ class ResolutionAuditRecord(Base):
             "outcome IN ('allowed','narrowed','denied','conflict','policy_error')",
             name="ck_resolution_audit_outcome",
         ),
+        CheckConstraint(
+            "requested_key_count >= 0",
+            name="ck_resolution_audit_requested_key_count_nonnegative",
+        ),
     )
 
     resolution_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
