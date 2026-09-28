@@ -202,3 +202,30 @@ def test_mcp_governance_conflict_returns_safe_tool_error(engine) -> None:
                 {"domains": ["engineering"]},
             )
         )
+
+
+def test_in_process_mcp_principal_without_resolve_permission_is_rejected(engine) -> None:
+    tenant_id = f"mcp-permission-{uuid4()}"
+    unauthorized = Principal(
+        tenant_id=tenant_id,
+        subject="mcp-user",
+        kind=PrincipalKind.USER,
+        client_id="mcp-client",
+        roles=frozenset({"developer"}),
+        groups=frozenset({"platform"}),
+        scopes=frozenset({"context.read"}),
+    )
+    server = build_mcp_server(
+        engine=engine,
+        cache=InMemoryResolutionCache(ttl_seconds=60, max_entries=16),
+        rules_provider=tuple,
+        principal_provider=lambda: unauthorized,
+    )
+
+    with pytest.raises(ToolError, match="insufficient permission"):
+        asyncio.run(
+            server.call_tool(
+                "resolve_context",
+                {"domains": ["engineering"]},
+            )
+        )
