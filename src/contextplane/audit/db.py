@@ -42,8 +42,8 @@ class ResolutionAuditRecord(Base):
     as_of: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
     requested_domains: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
-    requested_key_hashes: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
-    selector_hashes: Mapped[dict[str, str]] = mapped_column(JSONB, nullable=False)
+    requested_key_count: Mapped[int] = mapped_column(nullable=False)
+    selector_dimensions: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
 
     policy_decision: Mapped[str | None] = mapped_column(String(32), nullable=True)
     allowed_domains: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
