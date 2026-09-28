@@ -15,7 +15,7 @@ Status values: **planned**, **partial**, **implemented**, **verified**, **deferr
 | Registry | Context item schema | Yes | verified | Pydantic + PostgreSQL constraints |
 | Registry | Scope schema | Yes | verified | strict validation + tenant DB constraint |
 | Registry | Context item CRUD | Yes | planned | API + DB integration |
-| Registry | Immutable versioning | Yes | planned | supersession tests |
+| Registry | Immutable versioning | Yes | verified | insert-only history + PostgreSQL lineage constraints |
 | Registry | Provenance schema | Yes | verified | typed source fields + DB constraints |
 | Graph | Typed relationships | Yes | planned | graph query tests |
 | Resolver | Hierarchical scope | Yes | planned | precedence matrix |

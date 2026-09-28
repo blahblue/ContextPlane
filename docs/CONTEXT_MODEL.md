@@ -9,6 +9,8 @@ A discrete, versioned piece of governed organizational context.
 The initial implementation requires:
 
 - `id`
+- `logical_id`
+- `supersedes_id`
 - `key`
 - `value` **or** `payload_ref` (exactly one)
 - `domain`
@@ -26,6 +28,21 @@ The initial implementation requires:
 - `updated_at`
 
 Application validation and PostgreSQL constraints intentionally overlap for critical invariants.
+
+### Version identity and lineage
+
+`id` identifies one immutable persisted version. `logical_id` identifies the context concept across versions. `supersedes_id` points to the immediately previous persisted version.
+
+The current persistence rules enforce:
+
+- version 1 is a root and has no predecessor;
+- later versions must reference a predecessor;
+- a version can have at most one direct successor;
+- lineage cannot cross tenant or logical-item boundaries;
+- `(tenant_id, logical_id, version)` is unique;
+- supersession inserts a new row rather than mutating the prior row.
+
+Repository-level supersession additionally requires the key and domain to remain stable and locks the predecessor while creating the next version.
 
 ### Initial domains
 
@@ -163,7 +180,8 @@ The current schema verifies:
 - exactly one payload representation is present;
 - effective timestamps are timezone-aware at the application boundary;
 - effective end is later than effective start;
-- version is positive;
+- version is positive and has a valid root/supersession shape;
+- supersession lineage remains inside the same tenant and logical item;
 - checksum is lowercase SHA-256 hex;
 - domain, source type, authority, sensitivity, and override policy use known values.
 

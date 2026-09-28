@@ -20,7 +20,7 @@ Verification: GitHub Actions run 36442725339 passed install, lint, strict type-c
 
 ## Phase 1 — Persistence + context registry
 
-**Persistence foundation: verified in PR-002. ContextItem/Scope/provenance schema: verified in PR-003. Registry behavior remains planned for PR-004 and PR-005.**
+**Persistence foundation: verified in PR-002. ContextItem/Scope/provenance schema: verified in PR-003. Immutable versioning/supersession: verified in PR-004. Seed loading remains planned for PR-005.**
 
 Persistence verification: migrations applied to an empty PostgreSQL 16 service in GitHub Actions; configuration validation and real-database readiness tests passed.
 
@@ -38,6 +38,8 @@ Deliver:
 - YAML seed loader.
 
 Exit gate: no update silently mutates historical records.
+
+Versioning verification: PR-004 uses insert-only repository operations plus tenant/logical lineage constraints; fork, cross-tenant lineage, stale predecessor, and invalid lineage-shape cases are covered against real PostgreSQL.
 
 ## Phase 2 — Context graph + resolver
 

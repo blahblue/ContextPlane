@@ -56,6 +56,8 @@ Acceptance:
 
 ### PR-004 — Immutable versioning and supersession
 
+**Status:** verified
+
 Dependencies: PR-003
 
 Acceptance:
