@@ -17,6 +17,7 @@ from contextplane.auth import (
     EntraValidatorConfig,
     Principal,
     StaticKeyEntraValidator,
+    principal_has_permission,
 )
 from contextplane.cache import InMemoryResolutionCache
 from contextplane.context_registry.domain import ContextDomain
@@ -25,6 +26,7 @@ from contextplane.policy import PolicyRule
 from contextplane.runtime import (
     ResolveContextRequest,
     ResolveContextResponse,
+    RuntimeAuthorizationError,
     RuntimeGovernanceConflictError,
     RuntimePolicyConfigurationError,
     resolve_context_runtime,
@@ -52,7 +54,7 @@ class ContextPlaneEntraTokenVerifier(TokenVerifier):
             return None
 
         permissions = principal.scopes | principal.roles
-        if "context.resolve" not in permissions:
+        if not principal_has_permission(principal, "context.resolve"):
             return None
 
         return AccessToken(
@@ -156,6 +158,8 @@ def build_mcp_server(
                     rules=rules_provider(),
                     cache=cache,
                 )
+        except RuntimeAuthorizationError:
+            raise ToolError("insufficient permission") from None
         except RuntimePolicyConfigurationError as exc:
             raise ToolError(
                 f"policy configuration is invalid; resolution_id={exc.resolution_id}"
