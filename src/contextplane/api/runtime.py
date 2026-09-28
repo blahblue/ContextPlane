@@ -1,6 +1,7 @@
 """Authenticated ContextPlane runtime resolution endpoint."""
 
 from datetime import UTC, datetime
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -115,9 +116,9 @@ def _load_provenance(
 @router.post("/resolve", response_model=ResolveContextResponse)
 def resolve_context(
     request: ResolveContextRequest,
-    principal: Principal = Depends(authenticate_principal),
-    session: Session = Depends(get_database_session),
-    rules: tuple[PolicyRule, ...] = Depends(get_policy_rules),
+    principal: Annotated[Principal, Depends(authenticate_principal)],
+    session: Annotated[Session, Depends(get_database_session)],
+    rules: Annotated[tuple[PolicyRule, ...], Depends(get_policy_rules)],
 ) -> ResolveContextResponse:
     """Return policy-constrained effective organizational context."""
     as_of = datetime.now(UTC)
