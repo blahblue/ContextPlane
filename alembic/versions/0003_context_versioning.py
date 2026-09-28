@@ -31,18 +31,29 @@ def upgrade() -> None:
     op.execute("UPDATE context_items SET logical_id = id WHERE logical_id IS NULL")
     op.alter_column("context_items", "logical_id", nullable=False)
 
+    op.create_unique_constraint(
+        "uq_context_items_tenant_logical_id",
+        "context_items",
+        ["tenant_id", "logical_id", "id"],
+    )
     op.create_foreign_key(
-        "fk_context_items_supersedes_id",
+        "fk_context_items_supersedes_same_logical_item",
         "context_items",
         "context_items",
-        ["supersedes_id"],
-        ["id"],
+        ["tenant_id", "logical_id", "supersedes_id"],
+        ["tenant_id", "logical_id", "id"],
         ondelete="RESTRICT",
     )
     op.create_check_constraint(
         "ck_context_items_no_self_supersession",
         "context_items",
         "supersedes_id IS NULL OR supersedes_id <> id",
+    )
+    op.create_check_constraint(
+        "ck_context_items_version_lineage_shape",
+        "context_items",
+        "(version = 1 AND supersedes_id IS NULL) OR "
+        "(version > 1 AND supersedes_id IS NOT NULL)",
     )
     op.create_unique_constraint(
         "uq_context_items_tenant_logical_version",
@@ -76,14 +87,24 @@ def downgrade() -> None:
         type_="unique",
     )
     op.drop_constraint(
+        "ck_context_items_version_lineage_shape",
+        "context_items",
+        type_="check",
+    )
+    op.drop_constraint(
         "ck_context_items_no_self_supersession",
         "context_items",
         type_="check",
     )
     op.drop_constraint(
-        "fk_context_items_supersedes_id",
+        "fk_context_items_supersedes_same_logical_item",
         "context_items",
         type_="foreignkey",
+    )
+    op.drop_constraint(
+        "uq_context_items_tenant_logical_id",
+        "context_items",
+        type_="unique",
     )
     op.drop_column("context_items", "supersedes_id")
     op.drop_column("context_items", "logical_id")
