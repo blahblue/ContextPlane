@@ -7,6 +7,7 @@ from contextplane.runtime.domain import (
     ResolveContextResponse,
 )
 from contextplane.runtime.service import (
+    RuntimeAuthorizationError,
     RuntimeGovernanceConflictError,
     RuntimePolicyConfigurationError,
     RuntimeResolutionError,
@@ -18,6 +19,7 @@ __all__ = [
     "EffectiveContextItem",
     "ResolveContextRequest",
     "ResolveContextResponse",
+    "RuntimeAuthorizationError",
     "RuntimeGovernanceConflictError",
     "RuntimePolicyConfigurationError",
     "RuntimeResolutionError",
