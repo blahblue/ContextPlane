@@ -4,13 +4,13 @@
 
 ### ContextItem
 
-A discrete piece of organizational context.
+A discrete, versioned piece of governed organizational context.
 
-Required fields should include:
+The initial implementation requires:
 
 - `id`
 - `key`
-- `value` or `payload_ref`
+- `value` **or** `payload_ref` (exactly one)
 - `domain`
 - `scope`
 - `owner`
@@ -21,13 +21,29 @@ Required fields should include:
 - `effective_to`
 - `sensitivity`
 - `override_policy`
+- `checksum`
 - `created_at`
 - `updated_at`
-- `checksum`
+
+Application validation and PostgreSQL constraints intentionally overlap for critical invariants.
+
+### Initial domains
+
+The MVP intentionally starts with four governed domains:
+
+```text
+brand
+presentation
+engineering
+security
+```
+
+Expanding the domain set should be an explicit schema decision rather than accepting arbitrary values silently.
 
 ### Scope dimensions
 
-- tenant
+A scope always contains a non-empty `tenant_id`. Optional dimensions are:
+
 - business unit
 - team
 - role
@@ -40,9 +56,33 @@ Required fields should include:
 - audience
 - environment
 
+The application exposes these as a nested `ContextScope`. Persistence flattens them into indexed/queryable columns so future resolution does not depend on arbitrary JSON traversal.
+
+### Source / provenance
+
+A source has:
+
+- `type`
+- `identifier`
+- optional `uri`
+
+Initial source types:
+
+```text
+manual
+git
+sharepoint
+google_drive
+databricks
+fabric
+api
+```
+
+Source text never acquires authority from its wording. Authority is explicit metadata.
+
 ### Relation
 
-Typed relationship between context objects or enterprise entities.
+A typed relationship between context objects or enterprise entities. Relations are planned for PR-006 and are not part of the current schema.
 
 Examples:
 
@@ -53,17 +93,13 @@ client_deck -> uses -> external_brand_profile
 context_item -> supersedes -> context_item
 ```
 
-### Source
-
-Provenance information for the authoritative origin.
-
 ### Policy
 
-Rule controlling visibility, applicability, override behavior, or action.
+A rule controlling visibility, applicability, override behavior, or action. Full policy evaluation is deferred to the policy phase.
 
 ### Resolution
 
-Immutable audit representation of a resolved request.
+An immutable audit representation of a resolved request. Resolution records are deferred until the runtime/audit phase.
 
 ## Authority levels
 
@@ -75,58 +111,71 @@ Policy
 Mandatory Control
 ```
 
-Authority and scope are independent. A user preference may be more specific than an organization standard but still may not override it if the standard forbids override.
+Authority and scope are independent. A more-specific preference does not automatically override a higher-authority item.
+
+## Sensitivity levels
+
+```text
+public
+internal
+confidential
+restricted
+```
+
+## Override policy
+
+```text
+allow
+deny
+```
+
+The resolver will later combine override policy with authority and scope specificity.
 
 ## Example context object
 
 ```yaml
-id: ctx_brand_external_logo_008
 key: brand.logo.primary
 value:
   asset_uri: s3://example-brand-assets/logo-primary.svg
 domain: brand
 scope:
-  tenant: acme
+  tenant_id: acme
   audience: external
 owner: brand-team
 source:
   type: sharepoint
+  identifier: brand-standards-2027
   uri: sharepoint://brand/standards/2027
 authority_level: standard
-version: 8
-effective_from: 2027-01-01
+effective_from: 2027-01-01T00:00:00Z
 effective_to: null
 sensitivity: internal
 override_policy: deny
+checksum: <sha256>
 ```
 
-## Example resolved bundle
+## Enforced invariants
 
-```yaml
-resolution_id: res_123
-principal:
-  user: user_42
-  agent: cursor_agent_19
-request:
-  task: implement_api
-  repository: checkout-api
-context:
-  - key: engineering.api.versioning
-    value: semantic-versioning
-    authority: standard
-  - key: security.pii.logging
-    value: prohibited
-    authority: mandatory_control
-explanation:
-  - item: security.pii.logging
-    reason: matched org security policy + production environment
-```
+The current schema verifies:
+
+- tenant is non-empty;
+- key, owner, and source identifier are non-empty;
+- exactly one payload representation is present;
+- effective timestamps are timezone-aware at the application boundary;
+- effective end is later than effective start;
+- version is positive;
+- checksum is lowercase SHA-256 hex;
+- domain, source type, authority, sensitivity, and override policy use known values.
+
+A subtle PostgreSQL/SQLAlchemy edge case is handled explicitly: JSONB uses `none_as_null=True`, ensuring Python `None` becomes SQL `NULL` so the exactly-one-payload database constraint has the intended semantics.
 
 ## Freshness
 
-- mandatory policies remain valid until superseded or expired;
-- standards should support owner review cadence;
-- preferences may lose confidence as they age;
-- inferred context should expire faster than human-curated context.
+Freshness behavior is not yet implemented, but the model reserves effective dates for runtime applicability.
 
-The MVP should model freshness metadata even if automated decay is deferred.
+Future expectations:
+
+- mandatory policies remain valid until superseded or expired;
+- standards can require owner review cadence;
+- inferred preferences may lose confidence as they age;
+- inferred context should generally expire faster than human-curated authoritative context.

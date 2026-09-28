@@ -12,9 +12,11 @@ Status values: **planned**, **partial**, **implemented**, **verified**, **deferr
 | Persistence | Environment-driven DB configuration | Yes | verified | settings validation + fail-closed tests |
 | Persistence | Alembic migration boundary | Yes | verified | CI migration on empty database |
 | Persistence | Database readiness integration | Yes | verified | real PostgreSQL integration test |
+| Registry | Context item schema | Yes | verified | Pydantic + PostgreSQL constraints |
+| Registry | Scope schema | Yes | verified | strict validation + tenant DB constraint |
 | Registry | Context item CRUD | Yes | planned | API + DB integration |
 | Registry | Immutable versioning | Yes | planned | supersession tests |
-| Registry | Provenance | Yes | planned | source trace assertions |
+| Registry | Provenance schema | Yes | verified | typed source fields + DB constraints |
 | Graph | Typed relationships | Yes | planned | graph query tests |
 | Resolver | Hierarchical scope | Yes | planned | precedence matrix |
 | Resolver | Authority levels | Yes | planned | conflict tests |
