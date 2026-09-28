@@ -16,9 +16,9 @@ from contextplane.api.dependencies import (
 from contextplane.api.domain import (
     ContextProvenance,
     EffectiveContextItem,
+    ResolutionAuditResponse,
     ResolveContextRequest,
     ResolveContextResponse,
-    ResolutionAuditResponse,
 )
 from contextplane.audit import (
     AuditOutcome,
