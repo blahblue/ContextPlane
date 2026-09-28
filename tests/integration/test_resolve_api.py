@@ -397,3 +397,24 @@ def test_foreign_tenant_policy_configuration_fails_closed(engine) -> None:
 
     assert response.status_code == 500
     assert response.json() == {"detail": "policy configuration is invalid"}
+
+
+def test_authenticated_principal_without_resolve_permission_returns_403() -> None:
+    tenant_id = f"api-permission-{uuid4()}"
+    unauthorized = Principal(
+        tenant_id=tenant_id,
+        subject="user-no-resolve",
+        kind=PrincipalKind.USER,
+        client_id="client-123",
+        roles=frozenset({"developer"}),
+        groups=frozenset({"platform"}),
+        scopes=frozenset({"context.read"}),
+    )
+    authenticate_as(unauthorized)
+    client = TestClient(app)
+
+    response = post(client, {"domains": ["engineering"]})
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "insufficient permission"}
+    assert "x-contextplane-resolution-id" in response.headers
