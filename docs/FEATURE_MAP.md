@@ -18,9 +18,9 @@ Status values: **planned**, **partial**, **implemented**, **verified**, **deferr
 | Registry | Immutable versioning | Yes | verified | insert-only history + PostgreSQL lineage constraints |
 | Registry | Provenance schema | Yes | verified | typed source fields + DB constraints |
 | Graph | Typed relationships | Yes | verified | tenant-scoped logical edges + PostgreSQL FK/adversarial tests |
-| Resolver | Hierarchical scope | Yes | planned | precedence matrix |
+| Resolver | Hierarchical scope | Yes | verified | scope matching + wildcard/missing-dimension tests |
 | Resolver | Authority levels | Yes | planned | conflict tests |
-| Resolver | Explanation trace | Yes | planned | golden snapshots |
+| Resolver | Explanation trace | Yes | verified | deterministic candidate explanations |
 | Policy | Allow / deny | Yes | planned | adversarial tests |
 | Policy | Mandatory controls | Yes | planned | override rejection |
 | Identity | OIDC | Yes | planned | token validation |

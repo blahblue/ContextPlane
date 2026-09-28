@@ -90,6 +90,8 @@ Acceptance:
 
 ### PR-007 — Context resolver
 
+**Status:** verified
+
 Dependencies: PR-004, PR-006
 
 Acceptance:

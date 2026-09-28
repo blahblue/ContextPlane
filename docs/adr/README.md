@@ -9,6 +9,7 @@ Current ADRs:
 - [ADR-003 — Separate mandatory context from hard enforcement](003-context-vs-enforcement.md)
 - [ADR-004 — Use synchronous SQLAlchemy for the initial persistence layer](004-sync-sqlalchemy.md)
 - [ADR-005 — Relations target logical context identities with immutable version anchors](005-logical-relation-anchors.md)
+- [ADR-006 — Resolve version applicability before scope specificity](006-resolution-version-scope-order.md)
 
 New ADRs should use a short sequential number and include:
 

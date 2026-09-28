@@ -43,15 +43,15 @@ Versioning verification: PR-004 uses insert-only repository operations plus tena
 
 ## Phase 2 — Context graph + resolver
 
-**Graph foundation: verified in PR-006. Resolver work remains PR-007 and PR-008.**
+**Graph foundation: verified in PR-006. Candidate resolver: verified in PR-007. Conflict precedence remains PR-008.**
 
 Deliver:
 
 - typed relations; **verified in PR-006**
-- candidate selection;
-- hierarchy across org/team/role/user/task;
+- candidate selection; **verified in PR-007**
+- hierarchy across org/team/role/user/task; **scope matching foundation verified in PR-007**
 - deterministic conflict resolution;
-- explanation trace.
+- explanation trace. **candidate explanation trace verified in PR-007**
 
 Exit gate: table-driven tests cover precedence.
 
