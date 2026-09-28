@@ -1,5 +1,6 @@
 """Authenticated ContextPlane runtime resolution endpoint."""
 
+from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -121,6 +122,8 @@ def resolve_context(
     rules: tuple[PolicyRule, ...] = Depends(get_policy_rules),
 ) -> ResolveContextResponse:
     """Return policy-constrained effective organizational context."""
+    as_of = datetime.now(UTC)
+
     try:
         policy = evaluate_policy(
             PolicyEvaluationRequest(
@@ -139,11 +142,7 @@ def resolve_context(
     if policy.decision is PolicyDecisionKind.DENY or not policy.allowed_domains:
         return ResolveContextResponse(
             tenant_id=principal.tenant_id,
-            as_of=ContextResolutionRequest(
-                scope=_scope_for_principal(principal, request),
-                domains=frozenset(),
-                keys=frozenset(),
-            ).as_of,
+            as_of=as_of,
             policy=policy,
             context=(),
             candidate_explanations=(),
@@ -154,6 +153,7 @@ def resolve_context(
         scope=_scope_for_principal(principal, request),
         domains=policy.allowed_domains,
         keys=policy.allowed_keys,
+        as_of=as_of,
     )
     resolution = resolve_context_candidates(session, resolution_request)
     constrained = _apply_policy_filter(
