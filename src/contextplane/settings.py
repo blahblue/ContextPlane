@@ -13,12 +13,12 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    database_url: str
+    database_url: str = ""
 
     @field_validator("database_url")
     @classmethod
     def validate_database_url(cls, value: str) -> str:
-        """Require the explicit psycopg SQLAlchemy driver."""
+        """Require an explicit PostgreSQL URL using the psycopg driver."""
         if not value.startswith("postgresql+psycopg://"):
             raise ValueError("database_url must use postgresql+psycopg://")
         return value
