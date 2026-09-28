@@ -6,6 +6,12 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from contextplane.context_registry.db import ContextItemRecord
+from contextplane.context_registry.domain import (
+    AuthorityLevel,
+    ContextDomain,
+    OverridePolicy,
+    SensitivityLevel,
+)
 from contextplane.resolver.domain import (
     CandidateExplanation,
     ContextCandidate,
@@ -102,10 +108,10 @@ def resolve_context_candidates(
             key=record.key,
             value=record.value,
             payload_ref=record.payload_ref,
-            domain=record.domain,
-            authority_level=record.authority_level,
-            sensitivity=record.sensitivity,
-            override_policy=record.override_policy,
+            domain=ContextDomain(record.domain),
+            authority_level=AuthorityLevel(record.authority_level),
+            sensitivity=SensitivityLevel(record.sensitivity),
+            override_policy=OverridePolicy(record.override_policy),
             version=record.version,
             specificity=specificity,
             matched_dimensions=matched_dimensions,
