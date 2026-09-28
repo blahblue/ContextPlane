@@ -14,6 +14,7 @@ Current ADRs:
 - [ADR-008 — Separate domain admission from monotonic key narrowing](008-policy-admission-narrowing.md)
 - [ADR-009 — Normalize provider tokens into distinct ContextPlane principals](009-provider-neutral-principal.md)
 - [ADR-010 — Map Microsoft Entra access tokens to immutable ContextPlane identity](010-entra-claim-mapping.md)
+- [ADR-011 — Derive runtime identity scope from the authenticated principal](011-runtime-identity-scope.md)
 
 New ADRs should use a short sequential number and include:
 
