@@ -1,6 +1,6 @@
 """Authentication and normalized identity primitives."""
 
-from contextplane.auth.domain import Principal, PrincipalKind
+from contextplane.auth.domain import Principal, PrincipalKind, PrincipalValidator
 from contextplane.auth.oidc import (
     AuthenticationError,
     OIDCValidatorConfig,
@@ -13,6 +13,7 @@ __all__ = [
     "OIDCValidatorConfig",
     "Principal",
     "PrincipalKind",
+    "PrincipalValidator",
     "StaticKeyOIDCValidator",
     "principal_from_oidc_claims",
 ]
