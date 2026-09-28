@@ -2,7 +2,7 @@
 
 from datetime import UTC, datetime
 from typing import Annotated
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
@@ -18,7 +18,15 @@ from contextplane.api.domain import (
     EffectiveContextItem,
     ResolveContextRequest,
     ResolveContextResponse,
+    ResolutionAuditResponse,
 )
+from contextplane.audit import (
+    AuditOutcome,
+    build_resolution_audit,
+    create_resolution_audit,
+    get_resolution_audit,
+)
+from contextplane.audit.db import ResolutionAuditRecord
 from contextplane.auth import Principal, PrincipalKind
 from contextplane.context_registry.db import ContextItemRecord
 from contextplane.context_registry.domain import ContextScope, SourceType
@@ -54,6 +62,16 @@ def _scope_for_principal(
         audience=request.audience,
         environment=request.environment,
     )
+
+
+def _selector_dimensions(request: ResolveContextRequest) -> tuple[str, ...]:
+    """Return selector names only; audit records never store selector values."""
+    values = {
+        "task": request.task,
+        "audience": request.audience,
+        "environment": request.environment,
+    }
+    return tuple(sorted(name for name, value in values.items() if value is not None))
 
 
 def _apply_policy_filter(
@@ -113,6 +131,34 @@ def _load_provenance(
     }
 
 
+def _audit_to_response(record: ResolutionAuditRecord) -> ResolutionAuditResponse:
+    """Convert a persisted audit row into the safe public lookup contract."""
+    return ResolutionAuditResponse(
+        resolution_id=record.resolution_id,
+        tenant_id=record.tenant_id,
+        principal_kind=record.principal_kind,
+        as_of=record.as_of,
+        requested_domains=tuple(record.requested_domains),
+        requested_key_count=record.requested_key_count,
+        selector_dimensions=tuple(record.selector_dimensions),
+        policy_decision=record.policy_decision,
+        allowed_domains=tuple(record.allowed_domains),
+        denied_domains=tuple(record.denied_domains),
+        policy_rule_ids=tuple(record.policy_rule_ids),
+        considered_record_ids=tuple(UUID(value) for value in record.considered_record_ids),
+        returned_items=tuple(record.returned_items),
+        conflict_steps=tuple(record.conflict_steps),
+        outcome=record.outcome,
+        error_code=record.error_code,
+        created_at=record.created_at,
+    )
+
+
+def _audit_headers(resolution_id: UUID) -> dict[str, str]:
+    """Expose a correlation ID even for audited error responses."""
+    return {"X-ContextPlane-Resolution-ID": str(resolution_id)}
+
+
 @router.post("/resolve", response_model=ResolveContextResponse)
 def resolve_context(
     request: ResolveContextRequest,
@@ -122,6 +168,8 @@ def resolve_context(
 ) -> ResolveContextResponse:
     """Return policy-constrained effective organizational context."""
     as_of = datetime.now(UTC)
+    resolution_id = uuid4()
+    selector_dimensions = _selector_dimensions(request)
 
     try:
         policy = evaluate_policy(
@@ -133,13 +181,44 @@ def resolve_context(
             rules,
         )
     except PolicyTenantMismatchError:
+        create_resolution_audit(
+            session,
+            build_resolution_audit(
+                resolution_id=resolution_id,
+                principal=principal,
+                as_of=as_of,
+                requested_domains=request.domains,
+                requested_keys=request.keys,
+                selector_dimensions=selector_dimensions,
+                policy=None,
+                outcome=AuditOutcome.POLICY_ERROR,
+                error_code="policy_configuration_invalid",
+            ),
+        )
+        session.commit()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="policy configuration is invalid",
+            headers=_audit_headers(resolution_id),
         ) from None
 
     if policy.decision is PolicyDecisionKind.DENY or not policy.allowed_domains:
+        create_resolution_audit(
+            session,
+            build_resolution_audit(
+                resolution_id=resolution_id,
+                principal=principal,
+                as_of=as_of,
+                requested_domains=request.domains,
+                requested_keys=request.keys,
+                selector_dimensions=selector_dimensions,
+                policy=policy,
+                outcome=AuditOutcome.DENIED,
+            ),
+        )
+        session.commit()
         return ResolveContextResponse(
+            resolution_id=resolution_id,
             tenant_id=principal.tenant_id,
             as_of=as_of,
             policy=policy,
@@ -161,12 +240,33 @@ def resolve_context(
         redacted_keys=policy.redacted_keys,
     )
 
+    considered_record_ids = tuple(
+        candidate.record_id for candidate in constrained.candidates
+    )
+
     try:
         effective = apply_conflict_precedence(constrained)
     except ContextPrecedenceConflictError:
+        create_resolution_audit(
+            session,
+            build_resolution_audit(
+                resolution_id=resolution_id,
+                principal=principal,
+                as_of=as_of,
+                requested_domains=request.domains,
+                requested_keys=request.keys,
+                selector_dimensions=selector_dimensions,
+                policy=policy,
+                considered_record_ids=considered_record_ids,
+                outcome=AuditOutcome.CONFLICT,
+                error_code="context_governance_conflict",
+            ),
+        )
+        session.commit()
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="context governance conflict",
+            headers=_audit_headers(resolution_id),
         ) from None
 
     provenance = _load_provenance(
@@ -190,7 +290,30 @@ def resolve_context(
         if explanation.record_id in winner_ids
     )
 
+    outcome = (
+        AuditOutcome.NARROWED
+        if policy.decision is PolicyDecisionKind.NARROW
+        else AuditOutcome.ALLOWED
+    )
+    create_resolution_audit(
+        session,
+        build_resolution_audit(
+            resolution_id=resolution_id,
+            principal=principal,
+            as_of=as_of,
+            requested_domains=request.domains,
+            requested_keys=request.keys,
+            selector_dimensions=selector_dimensions,
+            policy=policy,
+            considered_record_ids=considered_record_ids,
+            effective=effective,
+            outcome=outcome,
+        ),
+    )
+    session.commit()
+
     return ResolveContextResponse(
+        resolution_id=resolution_id,
         tenant_id=principal.tenant_id,
         as_of=effective.as_of,
         policy=policy,
@@ -198,3 +321,29 @@ def resolve_context(
         candidate_explanations=explanations,
         conflict_decisions=effective.decisions,
     )
+
+
+@router.get("/resolutions/{resolution_id}", response_model=ResolutionAuditResponse)
+def get_resolution(
+    resolution_id: UUID,
+    principal: Annotated[Principal, Depends(authenticate_principal)],
+    session: Annotated[Session, Depends(get_database_session)],
+) -> ResolutionAuditResponse:
+    """Return one caller-owned audit record without raw context or token material."""
+    record = get_resolution_audit(
+        session,
+        tenant_id=principal.tenant_id,
+        resolution_id=resolution_id,
+    )
+    if (
+        record is None
+        or record.principal_subject != principal.subject
+        or record.principal_kind != principal.kind.value
+        or record.client_id != principal.client_id
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="resolution not found",
+        )
+
+    return _audit_to_response(record)
