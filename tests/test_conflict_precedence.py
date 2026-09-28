@@ -196,7 +196,7 @@ def test_equal_precedence_equivalent_payload_is_deduplicated_deterministically()
     result = apply_conflict_precedence(resolve(right, left))
 
     assert result.effective[0].record_id == left.record_id
-    assert result.decisions[0].suppressed_record_ids == (right.record_id,)
+    assert result.decisions[0].steps[0].suppressed_record_id == right.record_id
 
 
 def test_multiple_keys_produce_one_effective_item_per_key() -> None:
@@ -243,5 +243,60 @@ def test_decision_records_suppressed_context_and_reason() -> None:
     decision = result.decisions[0]
 
     assert decision.winner_record_id == broad.record_id
-    assert decision.suppressed_record_ids == (narrow.record_id,)
-    assert decision.reasons == ("broader context denies narrower override",)
+    assert decision.steps[0].winner_record_id == broad.record_id
+    assert decision.steps[0].suppressed_record_id == narrow.record_id
+    assert decision.steps[0].reason == "broader context denies narrower override"
+
+
+def test_equal_payload_with_different_override_policy_is_still_a_conflict() -> None:
+    allow = candidate(
+        record=19,
+        authority=AuthorityLevel.STANDARD,
+        specificity=1,
+        override=OverridePolicy.ALLOW,
+        value="same",
+    )
+    deny = candidate(
+        record=20,
+        authority=AuthorityLevel.STANDARD,
+        specificity=1,
+        override=OverridePolicy.DENY,
+        value="same",
+    )
+
+    with pytest.raises(ContextPrecedenceConflictError, match="equal authority"):
+        apply_conflict_precedence(resolve(allow, deny))
+
+
+def test_multi_candidate_chain_preserves_each_suppression_reason() -> None:
+    broad = candidate(
+        record=21,
+        authority=AuthorityLevel.STANDARD,
+        specificity=0,
+        override=OverridePolicy.ALLOW,
+        value="broad",
+    )
+    team = candidate(
+        record=22,
+        authority=AuthorityLevel.PREFERENCE,
+        specificity=1,
+        override=OverridePolicy.DENY,
+        value="team",
+    )
+    user_policy = candidate(
+        record=23,
+        authority=AuthorityLevel.POLICY,
+        specificity=2,
+        override=OverridePolicy.DENY,
+        value="user-policy",
+    )
+
+    result = apply_conflict_precedence(resolve(user_policy, broad, team))
+    decision = result.decisions[0]
+
+    assert result.effective[0].record_id == user_policy.record_id
+    assert len(decision.steps) == 2
+    assert decision.steps[0].winner_record_id == team.record_id
+    assert decision.steps[0].suppressed_record_id == broad.record_id
+    assert decision.steps[1].winner_record_id == user_policy.record_id
+    assert decision.steps[1].suppressed_record_id == team.record_id
