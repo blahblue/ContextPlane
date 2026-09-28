@@ -70,6 +70,7 @@ class ResolveContextResponse(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
+    resolution_id: UUID
     tenant_id: str
     as_of: datetime
     policy: PolicyDecision
