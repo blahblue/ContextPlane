@@ -2,6 +2,7 @@ from copy import deepcopy
 from pathlib import Path
 
 import pytest
+import yaml
 
 from contextplane.context_registry import ContextDomain
 from contextplane.context_registry.seed import SeedFileError, load_seed_document
@@ -43,8 +44,6 @@ def test_seed_checksum_is_deterministic_across_mapping_order(tmp_path: Path) -> 
         ]
     }
     path = tmp_path / "reordered.yaml"
-    import yaml
-
     path.write_text(yaml.safe_dump(reordered, sort_keys=False), encoding="utf-8")
     parsed = load_seed_document(path)[0]
 
@@ -52,8 +51,6 @@ def test_seed_checksum_is_deterministic_across_mapping_order(tmp_path: Path) -> 
 
 
 def test_duplicate_source_identity_is_rejected_before_apply(tmp_path: Path) -> None:
-    import yaml
-
     base = yaml.safe_load(FIXTURE.read_text(encoding="utf-8"))
     duplicate = deepcopy(base["items"][0])
     base["items"].append(duplicate)
