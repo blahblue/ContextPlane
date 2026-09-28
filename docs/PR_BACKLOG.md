@@ -157,6 +157,8 @@ Acceptance:
 
 ### PR-013 — Audit trace
 
+**Status:** verified
+
 Dependencies: PR-012
 
 Acceptance:
