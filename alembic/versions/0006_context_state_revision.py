@@ -74,7 +74,10 @@ def upgrade() -> None:
             ON CONFLICT (tenant_id)
             DO UPDATE SET revision = context_state_revisions.revision + 1;
 
-            RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
+            IF TG_OP = 'DELETE' THEN
+                RETURN OLD;
+            END IF;
+            RETURN NEW;
         END;
         $$;
         """
