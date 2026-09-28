@@ -142,6 +142,20 @@ Only candidate selection is cached. Policy evaluation, precedence, provenance lo
 
 Cache values contain resolved organizational context in process memory and therefore remain sensitive runtime data. The current reference cache is bounded and process-local. See ADR-013 for the complete boundary.
 
+## MCP authentication boundary
+
+The remote MCP server is an OAuth resource server. Bearer authentication runs before the `resolve_context` tool.
+
+ContextPlane reuses its Entra validator to verify token signature, issuer, API audience, time validity, tenant, and principal mapping. The MCP adapter additionally requires `context.resolve` as either a delegated scope or application role.
+
+Identity is not part of the MCP tool schema. The model can provide domains/keys/task/audience/environment, but tenant, subject, principal kind, client ID, groups, roles, and scopes come only from the verified access-token context.
+
+The reference CLI serves Streamable HTTP with stateless legacy transport behavior. Modern MCP 2026-07-28 requests are already sessionless. This avoids treating a long-lived legacy MCP session as the identity boundary.
+
+MCP bearer authentication does not protect stdio or in-process transports. For those transports, the launcher/embedding process is the trust boundary.
+
+See ADR-014 and [MCP.md](MCP.md).
+
 ## Prompt injection rule
 
 Source text is untrusted content even when the source system is trusted.
