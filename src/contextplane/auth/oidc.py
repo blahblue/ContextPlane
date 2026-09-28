@@ -1,11 +1,9 @@
 """Static-key OIDC validation and normalization into ContextPlane principals."""
 
-from typing import Any
+from typing import Annotated, Any
 
 import jwt
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, ValidationError
-from typing_extensions import Annotated
-
 from contextplane.auth.domain import Principal, PrincipalKind
 
 NonEmptyOIDCString = Annotated[
@@ -93,4 +91,4 @@ class StaticKeyOIDCValidator:
             )
             return principal_from_oidc_claims(claims)
         except (jwt.PyJWTError, ValidationError, ValueError, TypeError) as exc:
-            raise AuthenticationError("token validation failed") from exc
+            raise AuthenticationError("token validation failed") from None
