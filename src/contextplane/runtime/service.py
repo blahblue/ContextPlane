@@ -6,12 +6,6 @@ from uuid import UUID, uuid4
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from contextplane.runtime.domain import (
-    ContextProvenance,
-    EffectiveContextItem,
-    ResolveContextRequest,
-    ResolveContextResponse,
-)
 from contextplane.audit import (
     AuditOutcome,
     build_resolution_audit,
@@ -39,6 +33,12 @@ from contextplane.resolver import (
     ContextResolutionResult,
     apply_conflict_precedence,
     resolve_context_candidates,
+)
+from contextplane.runtime.domain import (
+    ContextProvenance,
+    EffectiveContextItem,
+    ResolveContextRequest,
+    ResolveContextResponse,
 )
 
 
