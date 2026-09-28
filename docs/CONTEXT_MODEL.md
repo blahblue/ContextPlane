@@ -119,7 +119,17 @@ See ADR-005 for the anchoring decision.
 
 ### Policy
 
-A rule controlling visibility, applicability, override behavior, or action. Full policy evaluation is deferred to the policy phase.
+Executable policy is modeled separately from ordinary descriptive context.
+
+The MVP policy evaluator supports:
+
+- `allow` and `deny` for domain admission;
+- `narrow` for key allowlists and redactions;
+- `policy` and `mandatory_control` authority only;
+- tenant-scoped evaluation;
+- monotonic narrowing.
+
+Policy evaluation cannot broaden the original requested context surface. See ADR-008.
 
 ### Resolution
 

@@ -51,6 +51,21 @@ Strong controls:
 - resource access mediated by policy;
 - short-lived scoped credentials.
 
+## Policy evaluation
+
+The policy layer distinguishes domain admission from key narrowing.
+
+- Allow/deny rules are resolved at the highest applicable authority.
+- Deny wins ties at equal authority.
+- Mandatory-control admission rules outrank ordinary policy rules.
+- Narrowing is monotonic: allowlists intersect and redactions union.
+- Policy evaluation never adds an unrequested domain or key.
+- Cross-tenant policy inputs fail closed.
+
+Default allow in this layer does **not** mean unauthenticated access. Policy evaluation is designed to operate inside the authenticated tenant boundary described below.
+
+See ADR-008 for the exact semantics.
+
 ## Entra reference path
 
 For the MVP:

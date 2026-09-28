@@ -21,8 +21,8 @@ Status values: **planned**, **partial**, **implemented**, **verified**, **deferr
 | Resolver | Hierarchical scope | Yes | verified | scope matching + wildcard/missing-dimension tests |
 | Resolver | Authority levels | Yes | verified | exhaustive authority × override matrix + fail-closed tie tests |
 | Resolver | Explanation trace | Yes | verified | deterministic candidate explanations |
-| Policy | Allow / deny | Yes | planned | adversarial tests |
-| Policy | Mandatory controls | Yes | planned | override rejection |
+| Policy | Allow / deny | Yes | verified | authority admission + deny-safe tie tests |
+| Policy | Mandatory controls | Yes | verified | mandatory allow/deny authority tests |
 | Identity | OIDC | Yes | planned | token validation |
 | Identity | Entra adapter | Yes | planned | tenant fixture |
 | Identity | Agent identity | Yes | planned | user/agent separation |
