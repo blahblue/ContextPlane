@@ -27,6 +27,7 @@ Status values: **planned**, **partial**, **implemented**, **verified**, **deferr
 | Identity | Entra adapter | Yes | verified | tid/oid/azp-appid mapping + agent/group-overage adversarial tests |
 | Identity | Agent identity | Yes | verified | user/agent/service separation + client ID requirement |
 | Runtime | REST resolver | Yes | verified | auth + policy + resolver + precedence + provenance E2E |
+| Runtime | Resolution cache | Yes | verified | principal/revision/policy keying + DB trigger + temporal-expiry tests |
 | Runtime | MCP server | Yes | planned | MCP contract tests |
 | Runtime | Python SDK | Yes | planned | SDK integration |
 | Audit | Resolution log | Yes | verified | append-only DB trigger + success/deny/conflict + actor-scoped lookup tests |
