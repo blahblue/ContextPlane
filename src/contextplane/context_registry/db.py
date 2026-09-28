@@ -3,7 +3,7 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import CheckConstraint, DateTime, Integer, String, Text, func
+from sqlalchemy import CheckConstraint, DateTime, Index, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -24,6 +24,20 @@ class ContextItemRecord(Base):
         CheckConstraint(
             "effective_to IS NULL OR effective_to > effective_from",
             name="ck_context_items_effective_window",
+        ),
+        CheckConstraint(
+            "length(btrim(tenant_id)) > 0",
+            name="ck_context_items_tenant_nonempty",
+        ),
+        CheckConstraint("length(btrim(key)) > 0", name="ck_context_items_key_nonempty"),
+        CheckConstraint("length(btrim(owner)) > 0", name="ck_context_items_owner_nonempty"),
+        CheckConstraint(
+            "length(btrim(source_identifier)) > 0",
+            name="ck_context_items_source_identifier_nonempty",
+        ),
+        CheckConstraint(
+            "checksum ~ '^[0-9a-f]{64}$'",
+            name="ck_context_items_checksum_sha256",
         ),
         CheckConstraint(
             "domain IN ('brand','presentation','engineering','security')",
@@ -47,6 +61,7 @@ class ContextItemRecord(Base):
             "('manual','git','sharepoint','google_drive','databricks','fabric','api')",
             name="ck_context_items_source_type",
         ),
+        Index("ix_context_items_tenant_key", "tenant_id", "key"),
     )
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
@@ -74,7 +89,12 @@ class ContextItemRecord(Base):
     source_uri: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     authority_level: Mapped[str] = mapped_column(String(64), nullable=False)
-    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    version: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=1,
+        server_default="1",
+    )
     effective_from: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     effective_to: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     sensitivity: Mapped[str] = mapped_column(String(64), nullable=False)
