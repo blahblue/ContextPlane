@@ -48,6 +48,15 @@ class AuditContextRef(BaseModel):
     version: int
 
 
+class AuditConflictStepRef(BaseModel):
+    """Non-payload reference to one precedence suppression step."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    winner_record_id: UUID
+    suppressed_record_id: UUID
+
+
 class ResolutionAuditCreate(BaseModel):
     """Complete append-only resolution audit record."""
 
@@ -71,7 +80,7 @@ class ResolutionAuditCreate(BaseModel):
 
     considered_record_ids: tuple[UUID, ...] = ()
     returned_items: tuple[AuditContextRef, ...] = ()
-    conflict_step_record_ids: tuple[UUID, ...] = ()
+    conflict_steps: tuple[AuditConflictStepRef, ...] = ()
 
     outcome: AuditOutcome
     error_code: NonEmptyAuditString | None = None
