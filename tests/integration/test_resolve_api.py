@@ -118,6 +118,19 @@ def test_missing_bearer_returns_401_before_provider_configuration() -> None:
     assert response.headers["www-authenticate"] == "Bearer"
 
 
+def test_presented_bearer_fails_unavailable_when_auth_provider_is_unconfigured() -> None:
+    client = TestClient(app)
+
+    response = client.post(
+        "/v1/context/resolve",
+        headers={"Authorization": "Bearer unvalidated-token"},
+        json={"domains": ["engineering"]},
+    )
+
+    assert response.status_code == 503
+    assert response.json() == {"detail": "authentication provider is not configured"}
+
+
 def test_authenticated_resolution_is_tenant_and_identity_scoped(engine) -> None:
     tenant_id = f"api-{uuid4()}"
     other_tenant = f"api-other-{uuid4()}"
@@ -197,6 +210,8 @@ def test_body_cannot_supply_identity_scope() -> None:
             "domains": ["engineering"],
             "tenant_id": "attacker-tenant",
             "user_id": "other-user",
+            "repository": "sensitive-repo",
+            "resource": "sensitive-resource",
         },
     )
 
