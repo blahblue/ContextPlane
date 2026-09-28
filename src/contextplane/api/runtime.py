@@ -21,6 +21,8 @@ from contextplane.api.domain import (
     ResolveContextResponse,
 )
 from contextplane.audit import (
+    AuditConflictStepRef,
+    AuditContextRef,
     AuditOutcome,
     build_resolution_audit,
     create_resolution_audit,
@@ -29,7 +31,7 @@ from contextplane.audit import (
 from contextplane.audit.db import ResolutionAuditRecord
 from contextplane.auth import Principal, PrincipalKind
 from contextplane.context_registry.db import ContextItemRecord
-from contextplane.context_registry.domain import ContextScope, SourceType
+from contextplane.context_registry.domain import ContextDomain, ContextScope, SourceType
 from contextplane.policy import (
     PolicyDecisionKind,
     PolicyEvaluationRequest,
@@ -136,19 +138,30 @@ def _audit_to_response(record: ResolutionAuditRecord) -> ResolutionAuditResponse
     return ResolutionAuditResponse(
         resolution_id=record.resolution_id,
         tenant_id=record.tenant_id,
-        principal_kind=record.principal_kind,
+        principal_kind=PrincipalKind(record.principal_kind),
         as_of=record.as_of,
-        requested_domains=tuple(record.requested_domains),
+        requested_domains=tuple(
+            ContextDomain(value) for value in record.requested_domains
+        ),
         requested_key_count=record.requested_key_count,
         selector_dimensions=tuple(record.selector_dimensions),
         policy_decision=record.policy_decision,
-        allowed_domains=tuple(record.allowed_domains),
-        denied_domains=tuple(record.denied_domains),
+        allowed_domains=tuple(
+            ContextDomain(value) for value in record.allowed_domains
+        ),
+        denied_domains=tuple(
+            ContextDomain(value) for value in record.denied_domains
+        ),
         policy_rule_ids=tuple(record.policy_rule_ids),
         considered_record_ids=tuple(UUID(value) for value in record.considered_record_ids),
-        returned_items=tuple(record.returned_items),
-        conflict_steps=tuple(record.conflict_steps),
-        outcome=record.outcome,
+        returned_items=tuple(
+            AuditContextRef.model_validate(item) for item in record.returned_items
+        ),
+        conflict_steps=tuple(
+            AuditConflictStepRef.model_validate(item)
+            for item in record.conflict_steps
+        ),
+        outcome=AuditOutcome(record.outcome),
         error_code=record.error_code,
         created_at=record.created_at,
     )
