@@ -312,3 +312,36 @@ def test_context_state_tracks_next_effective_time_boundary(engine) -> None:
 
     assert snapshot.next_transition == future_end
     assert snapshot.revision >= 2
+
+
+def test_same_tenant_different_principal_does_not_share_cache(engine) -> None:
+    tenant_id = f"cache-principal-{uuid4()}"
+    cache = InMemoryResolutionCache(ttl_seconds=300, max_entries=16)
+
+    with Session(engine) as session:
+        create_context_item(
+            session,
+            item(
+                tenant_id=tenant_id,
+                key="engineering.global",
+                checksum_char="2",
+            ),
+        )
+        session.commit()
+
+    client = TestClient(app)
+
+    configure_runtime(tenant_id, cache, subject="user-a")
+    first = post(client)
+    assert first.status_code == 200
+
+    configure_runtime(tenant_id, cache, subject="user-b")
+    second = post(client)
+    assert second.status_code == 200
+
+    configure_runtime(tenant_id, cache, subject="user-a")
+    third = post(client)
+    assert third.status_code == 200
+
+    assert cache.misses == 2
+    assert cache.hits == 1
