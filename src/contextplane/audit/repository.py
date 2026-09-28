@@ -2,11 +2,12 @@
 
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from contextplane.audit.db import ResolutionAuditRecord
 from contextplane.audit.domain import ResolutionAuditCreate
+from contextplane.auth import Principal
 
 
 def create_resolution_audit(
@@ -66,5 +67,28 @@ def get_resolution_audit(
         select(ResolutionAuditRecord).where(
             ResolutionAuditRecord.tenant_id == tenant_id,
             ResolutionAuditRecord.resolution_id == resolution_id,
+        )
+    )
+
+
+def get_resolution_audit_for_principal(
+    session: Session,
+    *,
+    principal: Principal,
+    resolution_id: UUID,
+) -> ResolutionAuditRecord | None:
+    """Return one audit row only when the exact authenticated actor owns it."""
+    client_predicate = (
+        ResolutionAuditRecord.client_id.is_(None)
+        if principal.client_id is None
+        else ResolutionAuditRecord.client_id == principal.client_id
+    )
+    return session.scalar(
+        select(ResolutionAuditRecord).where(
+            ResolutionAuditRecord.tenant_id == principal.tenant_id,
+            ResolutionAuditRecord.resolution_id == resolution_id,
+            ResolutionAuditRecord.principal_subject == principal.subject,
+            ResolutionAuditRecord.principal_kind == principal.kind.value,
+            client_predicate,
         )
     )
