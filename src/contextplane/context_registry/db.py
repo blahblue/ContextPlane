@@ -6,7 +6,7 @@ from uuid import UUID, uuid4
 from sqlalchemy import (
     CheckConstraint,
     DateTime,
-    ForeignKey,
+    ForeignKeyConstraint,
     Index,
     Integer,
     String,
@@ -75,13 +75,30 @@ class ContextItemRecord(Base):
             "supersedes_id IS NULL OR supersedes_id <> id",
             name="ck_context_items_no_self_supersession",
         ),
+        CheckConstraint(
+            "(version = 1 AND supersedes_id IS NULL) OR "
+            "(version > 1 AND supersedes_id IS NOT NULL)",
+            name="ck_context_items_version_lineage_shape",
+        ),
         UniqueConstraint(
             "tenant_id",
             "logical_id",
             "version",
             name="uq_context_items_tenant_logical_version",
         ),
+        UniqueConstraint(
+            "tenant_id",
+            "logical_id",
+            "id",
+            name="uq_context_items_tenant_logical_id",
+        ),
         UniqueConstraint("supersedes_id", name="uq_context_items_supersedes_id"),
+        ForeignKeyConstraint(
+            ["tenant_id", "logical_id", "supersedes_id"],
+            ["context_items.tenant_id", "context_items.logical_id", "context_items.id"],
+            name="fk_context_items_supersedes_same_logical_item",
+            ondelete="RESTRICT",
+        ),
         Index("ix_context_items_tenant_key", "tenant_id", "key"),
         Index("ix_context_items_tenant_logical", "tenant_id", "logical_id"),
     )
@@ -94,7 +111,6 @@ class ContextItemRecord(Base):
     )
     supersedes_id: Mapped[UUID | None] = mapped_column(
         PGUUID(as_uuid=True),
-        ForeignKey("context_items.id", ondelete="RESTRICT"),
         nullable=True,
     )
 
