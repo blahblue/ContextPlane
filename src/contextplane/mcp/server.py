@@ -51,10 +51,14 @@ class ContextPlaneEntraTokenVerifier(TokenVerifier):
         if principal.client_id is None:
             return None
 
+        permissions = principal.scopes | principal.roles
+        if "context.resolve" not in permissions:
+            return None
+
         return AccessToken(
             token=token,
             client_id=principal.client_id,
-            scopes=sorted(principal.scopes),
+            scopes=sorted(permissions),
             subject=principal.subject,
             claims={
                 "contextplane_principal": principal.model_dump(mode="json"),
@@ -213,7 +217,7 @@ def build_mcp_server_from_settings(
         auth=AuthSettings(
             issuer_url=AnyHttpUrl(issuer),
             resource_server_url=AnyHttpUrl(resource_url),
-            required_scopes=[],
+            required_scopes=["context.resolve"],
             validate_token_resource=False,
         ),
     )
