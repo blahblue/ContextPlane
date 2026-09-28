@@ -35,7 +35,7 @@ def upgrade() -> None:
         sa.Column("policy_rule_ids", postgresql.JSONB(), nullable=False),
         sa.Column("considered_record_ids", postgresql.JSONB(), nullable=False),
         sa.Column("returned_items", postgresql.JSONB(), nullable=False),
-        sa.Column("conflict_step_record_ids", postgresql.JSONB(), nullable=False),
+        sa.Column("conflict_steps", postgresql.JSONB(), nullable=False),
         sa.Column("outcome", sa.String(length=32), nullable=False),
         sa.Column("error_code", sa.String(length=512), nullable=True),
         sa.Column(
