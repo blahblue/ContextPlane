@@ -32,7 +32,7 @@ Status values: **planned**, **partial**, **implemented**, **verified**, **deferr
 | Audit | Resolution log | Yes | planned | audit completeness |
 | Client | Coding-agent demo | Yes | planned | reproducible scenario |
 | Client | Copilot Studio demo | Yes | planned | reproducible scenario |
-| Sources | YAML seed | Yes | planned | idempotency |
+| Sources | YAML seed | Yes | verified | canonical checksum + idempotency + immutable supersession |
 | Sources | Git adapter | No | deferred | — |
 | Sources | SharePoint adapter | No | deferred | — |
 | Sources | Databricks adapter | No | deferred | — |
