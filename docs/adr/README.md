@@ -13,6 +13,7 @@ Current ADRs:
 - [ADR-007 — Resolve context conflicts with authority, specificity, and explicit override](007-conflict-precedence.md)
 - [ADR-008 — Separate domain admission from monotonic key narrowing](008-policy-admission-narrowing.md)
 - [ADR-009 — Normalize provider tokens into distinct ContextPlane principals](009-provider-neutral-principal.md)
+- [ADR-010 — Map Microsoft Entra access tokens to immutable ContextPlane identity](010-entra-claim-mapping.md)
 
 New ADRs should use a short sequential number and include:
 
