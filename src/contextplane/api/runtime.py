@@ -24,7 +24,7 @@ from contextplane.audit import (
     AuditOutcome,
     build_resolution_audit,
     create_resolution_audit,
-    get_resolution_audit,
+    get_resolution_audit_for_principal,
 )
 from contextplane.audit.db import ResolutionAuditRecord
 from contextplane.auth import Principal, PrincipalKind
@@ -330,17 +330,12 @@ def get_resolution(
     session: Annotated[Session, Depends(get_database_session)],
 ) -> ResolutionAuditResponse:
     """Return one caller-owned audit record without raw context or token material."""
-    record = get_resolution_audit(
+    record = get_resolution_audit_for_principal(
         session,
-        tenant_id=principal.tenant_id,
+        principal=principal,
         resolution_id=resolution_id,
     )
-    if (
-        record is None
-        or record.principal_subject != principal.subject
-        or record.principal_kind != principal.kind.value
-        or record.client_id != principal.client_id
-    ):
+    if record is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="resolution not found",
