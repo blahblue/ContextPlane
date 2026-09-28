@@ -17,6 +17,22 @@ Represent separately:
 
 Do not collapse user and agent into one principal.
 
+## Authentication boundary
+
+Identity-provider adapters validate bearer tokens and normalize them into a provider-neutral principal. Core code preserves separate human-user, agent, and service identities.
+
+The reference generic OIDC validator:
+
+- pins the accepted algorithm to RS256;
+- validates signature, issuer, audience, expiry, issued-at, and subject;
+- requires a non-empty tenant;
+- requires explicit principal type;
+- requires a client/application ID for agents and services;
+- normalizes roles, groups, and scopes;
+- returns a generic authentication failure rather than exposing validation internals.
+
+Remote signing-key discovery and provider-specific claim mapping are adapter responsibilities.
+
 ## Authorization inputs
 
 A policy decision may consider:
