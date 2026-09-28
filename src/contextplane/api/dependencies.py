@@ -16,6 +16,7 @@ from contextplane.auth import (
     PrincipalValidator,
     StaticKeyEntraValidator,
 )
+from contextplane.cache import InMemoryResolutionCache
 from contextplane.database import build_engine
 from contextplane.policy import PolicyRule
 from contextplane.settings import Settings
@@ -33,6 +34,16 @@ def get_settings() -> Settings:
 def get_engine() -> Engine:
     """Create the process-level SQLAlchemy engine lazily."""
     return build_engine(get_settings())
+
+
+@lru_cache
+def get_resolution_cache() -> InMemoryResolutionCache:
+    """Return the bounded process-local reference resolution cache."""
+    settings = get_settings()
+    return InMemoryResolutionCache(
+        ttl_seconds=settings.resolution_cache_ttl_seconds,
+        max_entries=settings.resolution_cache_max_entries,
+    )
 
 
 def get_database_session() -> Iterator[Session]:
