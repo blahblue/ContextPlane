@@ -139,9 +139,12 @@ Cached context is reused across users, tenants, or policy versions.
 
 Mitigations:
 
-- cache keys include tenant, principal, task, resource, policy version, and context version state;
-- short TTLs;
-- invalidation on authoritative updates.
+- opaque cache keys include tenant, subject, principal kind, client identity, roles, groups, scopes, and resolver scope;
+- cache keys include a monotonic tenant context revision and deterministic policy fingerprint;
+- PostgreSQL bumps context revision on context-item INSERT, UPDATE, or DELETE;
+- cache expiry is bounded by both TTL and the next effective-time transition;
+- only candidate resolution is cached; policy, precedence, provenance, and audit remain per-request;
+- integration tests verify cross-principal isolation and authoritative-update invalidation.
 
 ### T10 — Audit tampering
 
@@ -189,6 +192,9 @@ The MVP should include tests for:
 - prompt-injection content;
 - stale/superseded policies;
 - cache-key isolation;
+- context-revision invalidation;
+- policy-fingerprint invalidation;
+- effective-time cache expiry;
 - over-retrieval;
 - context poisoning;
 - mandatory-control override attempts;
