@@ -28,7 +28,7 @@ Status values: **planned**, **partial**, **implemented**, **verified**, **deferr
 | Identity | Agent identity | Yes | verified | user/agent/service separation + client ID requirement |
 | Runtime | REST resolver | Yes | verified | auth + policy + resolver + precedence + provenance E2E |
 | Runtime | Resolution cache | Yes | verified | principal/revision/policy keying + DB trigger + temporal-expiry tests |
-| Runtime | MCP server | Yes | planned | MCP contract tests |
+| Runtime | MCP server | Yes | verified | shared-runtime + tool schema + Entra verifier + MCP integration tests |
 | Runtime | Python SDK | Yes | planned | SDK integration |
 | Audit | Resolution log | Yes | verified | append-only DB trigger + success/deny/conflict + actor-scoped lookup tests |
 | Client | Coding-agent demo | Yes | planned | reproducible scenario |
