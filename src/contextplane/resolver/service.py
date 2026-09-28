@@ -86,6 +86,8 @@ def resolve_context_candidates(
         query = query.where(
             ContextItemRecord.domain.in_([domain.value for domain in request.domains])
         )
+    if request.keys is not None:
+        query = query.where(ContextItemRecord.key.in_(sorted(request.keys)))
 
     active_versions = _latest_active_versions(session.scalars(query))
 
