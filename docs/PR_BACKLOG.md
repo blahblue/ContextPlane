@@ -145,6 +145,8 @@ Acceptance:
 
 ### PR-012 — Resolve API
 
+**Status:** verified
+
 Dependencies: PR-009, PR-011
 
 Acceptance:
