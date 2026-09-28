@@ -20,6 +20,7 @@ from contextplane.auth import (
     StaticKeyEntraValidator,
 )
 from contextplane.cache import InMemoryResolutionCache
+from contextplane.context_registry.domain import ContextDomain
 from contextplane.database import build_engine
 from contextplane.policy import PolicyRule
 from contextplane.runtime import (
@@ -121,7 +122,7 @@ def build_mcp_server(
         structured_output=True,
     )
     def resolve_context(
-        domains: list[str],
+        domains: list[ContextDomain],
         keys: list[str] | None = None,
         task: str | None = None,
         audience: str | None = None,
