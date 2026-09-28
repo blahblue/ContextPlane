@@ -1,6 +1,5 @@
 """Validated immutable audit models for context resolution."""
 
-import hashlib
 from datetime import datetime
 from enum import StrEnum
 from typing import Annotated
@@ -21,12 +20,6 @@ NonEmptyAuditString = Annotated[
     str,
     StringConstraints(strip_whitespace=True, min_length=1, max_length=512),
 ]
-Sha256Hex = Annotated[
-    str,
-    StringConstraints(pattern=r"^[0-9a-f]{64}$"),
-]
-
-
 class AuditOutcome(StrEnum):
     """Runtime outcomes captured without raw context payloads."""
 
@@ -70,8 +63,8 @@ class ResolutionAuditCreate(BaseModel):
     as_of: datetime
 
     requested_domains: tuple[ContextDomain, ...]
-    requested_key_hashes: tuple[Sha256Hex, ...] = ()
-    selector_hashes: dict[NonEmptyAuditString, Sha256Hex] = {}
+    requested_key_count: int = 0
+    selector_dimensions: tuple[NonEmptyAuditString, ...] = ()
 
     policy_decision: PolicyDecisionKind | None = None
     allowed_domains: tuple[ContextDomain, ...] = ()
@@ -92,8 +85,3 @@ class ResolutionAuditCreate(BaseModel):
         if value.tzinfo is None or value.utcoffset() is None:
             raise ValueError("as_of must be timezone-aware")
         return value
-
-
-def hash_audit_value(value: str) -> str:
-    """Hash request selectors so audit records avoid raw caller-supplied values."""
-    return hashlib.sha256(value.encode("utf-8")).hexdigest()
