@@ -103,6 +103,19 @@ The current reference validator pins an RSA public key for deterministic local t
 
 See ADR-010 for the mapping semantics.
 
+
+## Runtime resolve boundary
+
+The public `POST /v1/context/resolve` contract derives tenant, user/agent subject, and application identity from the validated principal. The request body cannot supply those fields.
+
+Task, audience, and environment are contextual selectors, not authorization credentials. Repository/resource/team/role/business-unit selectors remain outside the public contract until they can be bound to an entitlement decision.
+
+Policy is evaluated before context retrieval. Domain denial can short-circuit retrieval, and key narrowing is applied before conflict precedence.
+
+Runtime provenance intentionally omits raw source URIs. The API returns enough provenance to identify owner/source/version while avoiding unnecessary disclosure of internal source locations.
+
+See ADR-011 for the transport-boundary decision.
+
 ## Prompt injection rule
 
 Source text is untrusted content even when the source system is trusted.
