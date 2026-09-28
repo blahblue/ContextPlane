@@ -57,13 +57,15 @@ Exit gate: table-driven tests cover precedence.
 
 ## Phase 3 — Policy
 
+**Core policy evaluator: verified in PR-009. Identity-aware conditions and resource enforcement remain later work.**
+
 Deliver:
 
-- allow/deny;
-- override rules;
-- mandatory controls;
+- allow/deny; **verified in PR-009**
+- override rules; **admission authority and deny-safe ties verified in PR-009**
+- mandatory controls; **verified in PR-009**
 - sensitivity classes;
-- policy decision result.
+- policy decision result. **verified in PR-009**
 
 Exit gate: personal preferences cannot override mandatory controls.
 
