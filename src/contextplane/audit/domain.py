@@ -8,6 +8,7 @@ from uuid import UUID
 from pydantic import (
     BaseModel,
     ConfigDict,
+    Field,
     StringConstraints,
     field_validator,
 )
@@ -62,8 +63,8 @@ class ResolutionAuditCreate(BaseModel):
     client_id: NonEmptyAuditString | None = None
     as_of: datetime
 
-    requested_domains: tuple[ContextDomain, ...]
-    requested_key_count: int = 0
+    requested_domains: tuple[ContextDomain, ...] = Field(min_length=1)
+    requested_key_count: int = Field(default=0, ge=0)
     selector_dimensions: tuple[NonEmptyAuditString, ...] = ()
 
     policy_decision: PolicyDecisionKind | None = None
