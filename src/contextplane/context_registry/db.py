@@ -66,7 +66,7 @@ class ContextItemRecord(Base):
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
     key: Mapped[str] = mapped_column(String(512), nullable=False)
-    value: Mapped[dict[str, object] | None] = mapped_column(JSONB, nullable=True)
+    value: Mapped[dict[str, object] | None] = mapped_column(JSONB(none_as_null=True), nullable=True)
     payload_ref: Mapped[str | None] = mapped_column(Text, nullable=True)
     domain: Mapped[str] = mapped_column(String(64), nullable=False)
 
