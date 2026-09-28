@@ -40,8 +40,12 @@ def create_resolution_audit(
             }
             for item in audit.returned_items
         ],
-        conflict_step_record_ids=[
-            str(item) for item in audit.conflict_step_record_ids
+        conflict_steps=[
+            {
+                "winner_record_id": str(step.winner_record_id),
+                "suppressed_record_id": str(step.suppressed_record_id),
+            }
+            for step in audit.conflict_steps
         ],
         outcome=audit.outcome.value,
         error_code=audit.error_code,
