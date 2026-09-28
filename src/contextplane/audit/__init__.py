@@ -5,7 +5,6 @@ from contextplane.audit.domain import (
     AuditContextRef,
     AuditOutcome,
     ResolutionAuditCreate,
-    hash_audit_value,
 )
 from contextplane.audit.repository import create_resolution_audit, get_resolution_audit
 
@@ -16,5 +15,4 @@ __all__ = [
     "ResolutionAuditCreate",
     "create_resolution_audit",
     "get_resolution_audit",
-    "hash_audit_value",
 ]
