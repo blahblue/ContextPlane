@@ -8,6 +8,7 @@ from alembic import context
 from contextplane.audit.db import ResolutionAuditRecord
 from contextplane.context_graph.db import ContextRelationRecord
 from contextplane.context_registry.db import ContextItemRecord
+from contextplane.context_registry.state_db import ContextStateRevisionRecord
 from contextplane.settings import Settings
 
 config = context.config
@@ -22,6 +23,7 @@ target_metadata = ContextItemRecord.metadata
 if (
     ContextRelationRecord.metadata is not target_metadata
     or ResolutionAuditRecord.metadata is not target_metadata
+    or ContextStateRevisionRecord.metadata is not target_metadata
 ):
     raise RuntimeError("ContextPlane persistence models must share SQLAlchemy metadata")
 
