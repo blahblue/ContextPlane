@@ -121,6 +121,8 @@ Acceptance:
 
 ### PR-010 — OIDC principal model
 
+**Status:** verified
+
 Dependencies: PR-001
 
 Acceptance:
