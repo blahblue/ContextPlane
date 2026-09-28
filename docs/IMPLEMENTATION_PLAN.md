@@ -71,15 +71,15 @@ Exit gate: personal preferences cannot override mandatory controls.
 
 ## Phase 4 — Identity
 
-**Provider-neutral OIDC principal model: verified in PR-010. Entra adapter remains PR-011.**
+**Provider-neutral OIDC principal model: verified in PR-010. Microsoft Entra adapter: verified in PR-011.**
 
 Deliver:
 
 - OIDC abstraction; **verified in PR-010**
 - local test issuer;
-- Entra reference adapter;
+- Entra reference adapter; **verified in PR-011**
 - user + agent principal model; **verified in PR-010**
-- tenant isolation. **authentication tenant requirement verified in PR-010; Entra tenant mapping remains PR-011**
+- tenant isolation. **generic tenant requirement verified in PR-010; Entra tenant mapping verified in PR-011**
 
 Exit gate: cross-tenant requests fail closed.
 
