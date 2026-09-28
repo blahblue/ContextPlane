@@ -73,3 +73,34 @@ class ContextResolutionResult(BaseModel):
     as_of: datetime
     candidates: tuple[ContextCandidate, ...]
     explanations: tuple[CandidateExplanation, ...]
+
+
+class ConflictStep(BaseModel):
+    """One pairwise precedence decision in a key-level resolution."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    winner_record_id: UUID
+    suppressed_record_id: UUID
+    reason: str
+
+
+class ConflictDecision(BaseModel):
+    """Auditable explanation for one key-level precedence decision."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    key: str
+    winner_record_id: UUID
+    steps: tuple[ConflictStep, ...]
+
+
+class EffectiveContextResult(BaseModel):
+    """One effective context value per key after conflict precedence."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    tenant_id: str
+    as_of: datetime
+    effective: tuple[ContextCandidate, ...]
+    decisions: tuple[ConflictDecision, ...]

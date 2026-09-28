@@ -100,6 +100,8 @@ Acceptance:
 
 ### PR-008 — Conflict precedence
 
+**Status:** verified
+
 Dependencies: PR-007
 
 Acceptance:
