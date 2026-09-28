@@ -5,7 +5,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-COPY pyproject.toml README.md LICENSE ./
+COPY pyproject.toml README.md LICENSE alembic.ini ./
+COPY alembic ./alembic
 COPY src ./src
 
 RUN pip install --no-cache-dir . \
@@ -15,4 +16,4 @@ USER contextplane
 
 EXPOSE 8000
 
-CMD ["uvicorn", "contextplane.app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "alembic upgrade head && exec uvicorn contextplane.app:app --host 0.0.0.0 --port 8000"]

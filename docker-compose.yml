@@ -1,7 +1,29 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: contextplane
+      POSTGRES_USER: contextplane
+      POSTGRES_PASSWORD: contextplane
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U contextplane -d contextplane"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+    volumes:
+      - contextplane-postgres:/var/lib/postgresql/data
+
   contextplane:
     build:
       context: .
+    environment:
+      CONTEXTPLANE_DATABASE_URL: postgresql+psycopg://contextplane:contextplane@postgres:5432/contextplane
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       - "8000:8000"
     restart: unless-stopped
+
+volumes:
+  contextplane-postgres:

@@ -1,4 +1,4 @@
-.PHONY: install lint type test verify run
+.PHONY: install lint type test migrate verify run
 
 install:
 	python -m pip install -e ".[dev]"
@@ -11,6 +11,9 @@ type:
 
 test:
 	pytest --cov=contextplane --cov-report=term-missing
+
+migrate:
+	alembic upgrade head
 
 verify: lint type test
 
