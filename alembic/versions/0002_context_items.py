@@ -22,7 +22,7 @@ def upgrade() -> None:
         "context_items",
         sa.Column("id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("key", sa.String(length=512), nullable=False),
-        sa.Column("value", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
+        sa.Column("value", postgresql.JSONB(astext_type=sa.Text(), none_as_null=True), nullable=True),
         sa.Column("payload_ref", sa.Text(), nullable=True),
         sa.Column("domain", sa.String(length=64), nullable=False),
         sa.Column("tenant_id", sa.String(length=512), nullable=False),
