@@ -275,3 +275,69 @@ def test_database_rejects_invalid_relation_type(relation_type: str) -> None:
             session.rollback()
     finally:
         engine.dispose()
+
+
+@pytest.mark.integration
+def test_relation_queries_never_cross_tenant_boundary() -> None:
+    engine = build_engine(Settings())
+    tenant_id = f"graph-query-{uuid4()}"
+    other_tenant = f"graph-query-other-{uuid4()}"
+
+    try:
+        with Session(engine) as session:
+            source_logical, _, target_logical, _ = create_pair(session, tenant_id)
+            create_context_relation(
+                session,
+                ContextRelationCreate(
+                    tenant_id=tenant_id,
+                    source_logical_id=source_logical,
+                    target_logical_id=target_logical,
+                    relation_type=RelationType.GOVERNS,
+                ),
+            )
+            session.commit()
+
+        with Session(engine) as session:
+            assert (
+                get_outgoing_relations(
+                    session,
+                    tenant_id=other_tenant,
+                    source_logical_id=source_logical,
+                )
+                == []
+            )
+            assert (
+                get_incoming_relations(
+                    session,
+                    tenant_id=other_tenant,
+                    target_logical_id=target_logical,
+                )
+                == []
+            )
+    finally:
+        engine.dispose()
+
+
+@pytest.mark.integration
+def test_database_rejects_self_relation_even_with_direct_insert() -> None:
+    engine = build_engine(Settings())
+    tenant_id = f"graph-self-{uuid4()}"
+
+    try:
+        with Session(engine) as session:
+            source_logical, source_id, _, _ = create_pair(session, tenant_id)
+            session.add(
+                ContextRelationRecord(
+                    tenant_id=tenant_id,
+                    source_logical_id=source_logical,
+                    source_anchor_id=source_id,
+                    target_logical_id=source_logical,
+                    target_anchor_id=source_id,
+                    relation_type="related_to",
+                )
+            )
+            with pytest.raises(IntegrityError):
+                session.commit()
+            session.rollback()
+    finally:
+        engine.dispose()
