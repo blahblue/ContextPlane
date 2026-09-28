@@ -6,7 +6,7 @@ This backlog decomposes the implementation plan into reviewable, independently v
 
 ### PR-001 — Repository and application scaffold
 
-**Status:** in verification
+**Status:** verified
 
 Scope:
 - Python package;
@@ -22,6 +22,8 @@ Acceptance:
 - container runs as a non-root user.
 
 ### PR-002 — Persistence foundation
+
+**Status:** verified
 
 Dependencies: PR-001
 
