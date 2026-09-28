@@ -263,3 +263,35 @@ def test_explicit_empty_target_domains_are_rejected() -> None:
             effect=PolicyEffect.DENY,
             domains=frozenset(),
         )
+
+
+def test_total_domain_deny_clears_requested_keys() -> None:
+    result = evaluate_policy(
+        request(
+            ContextDomain.ENGINEERING,
+            keys=frozenset({"engineering.secret", "engineering.public"}),
+        ),
+        [rule(rule_id="deny-all", effect=PolicyEffect.DENY)],
+    )
+
+    assert result.decision is PolicyDecisionKind.DENY
+    assert result.allowed_domains == frozenset()
+    assert result.allowed_keys == frozenset()
+
+
+def test_no_requested_domains_does_not_apply_unscoped_narrowing() -> None:
+    result = evaluate_policy(
+        request(keys=frozenset({"a", "secret"})),
+        [
+            rule(
+                rule_id="narrow-global",
+                effect=PolicyEffect.NARROW,
+                redact_keys=frozenset({"secret"}),
+            )
+        ],
+    )
+
+    assert result.decision is PolicyDecisionKind.ALLOW
+    assert result.allowed_domains == frozenset()
+    assert result.allowed_keys == {"a", "secret"}
+    assert result.narrowing_rule_ids == ()
