@@ -85,7 +85,7 @@ Exit gate: cross-tenant requests fail closed.
 
 ## Phase 5 — Runtime API
 
-**Authenticated REST resolution path: verified in PR-012. Immutable runtime audit: verified in PR-013. Cache remains PR-014.**
+**Authenticated REST resolution path: verified in PR-012. Immutable runtime audit: verified in PR-013. Identity/version-aware cache boundary: verified in PR-014.**
 
 Deliver:
 
@@ -93,7 +93,7 @@ Deliver:
 - compact context packaging; **verified in PR-012**
 - provenance; **safe runtime provenance verified in PR-012**
 - audit log; **verified in PR-013**
-- cache boundary.
+- cache boundary. **verified in PR-014**
 
 Exit gate: identity + policy + graph + audit succeed end to end.
 
