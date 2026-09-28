@@ -2,11 +2,11 @@
 
 from contextplane.resolver.domain import (
     CandidateExplanation,
+    ConflictDecision,
+    ConflictStep,
     ContextCandidate,
     ContextResolutionRequest,
     ContextResolutionResult,
-    ConflictDecision,
-    ConflictStep,
     EffectiveContextResult,
 )
 from contextplane.resolver.precedence import (
