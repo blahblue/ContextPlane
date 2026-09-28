@@ -2,6 +2,7 @@
 
 from fastapi import FastAPI
 
+from contextplane.api.runtime import router as context_router
 from contextplane.models import HealthResponse
 
 app = FastAPI(
@@ -9,6 +10,7 @@ app = FastAPI(
     version="0.1.0",
     description="Governed organizational context runtime for AI agents.",
 )
+app.include_router(context_router)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["system"])
