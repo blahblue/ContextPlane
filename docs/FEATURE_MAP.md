@@ -17,7 +17,7 @@ Status values: **planned**, **partial**, **implemented**, **verified**, **deferr
 | Registry | Context item CRUD | Yes | planned | API + DB integration |
 | Registry | Immutable versioning | Yes | verified | insert-only history + PostgreSQL lineage constraints |
 | Registry | Provenance schema | Yes | verified | typed source fields + DB constraints |
-| Graph | Typed relationships | Yes | planned | graph query tests |
+| Graph | Typed relationships | Yes | verified | tenant-scoped logical edges + PostgreSQL FK/adversarial tests |
 | Resolver | Hierarchical scope | Yes | planned | precedence matrix |
 | Resolver | Authority levels | Yes | planned | conflict tests |
 | Resolver | Explanation trace | Yes | planned | golden snapshots |
