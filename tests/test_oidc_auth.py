@@ -186,3 +186,26 @@ def test_algorithm_confusion_is_rejected(keypair: tuple[str, str]) -> None:
 
     with pytest.raises(AuthenticationError, match="token validation failed"):
         validator(public_key).validate(forged)
+
+
+def test_future_issued_at_fails_closed(keypair: tuple[str, str]) -> None:
+    private_key, public_key = keypair
+    now = datetime.now(UTC)
+
+    with pytest.raises(AuthenticationError, match="token validation failed"):
+        validator(public_key).validate(
+            token(
+                private_key,
+                claims(
+                    iat=int((now + timedelta(minutes=5)).timestamp()),
+                    exp=int((now + timedelta(minutes=10)).timestamp()),
+                ),
+            )
+        )
+
+
+def test_blank_subject_fails_closed(keypair: tuple[str, str]) -> None:
+    private_key, public_key = keypair
+
+    with pytest.raises(AuthenticationError, match="token validation failed"):
+        validator(public_key).validate(token(private_key, claims(sub="   ")))
