@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from contextplane.context_registry.domain import AuthorityLevel, OverridePolicy
 from contextplane.resolver.domain import (
     ConflictDecision,
+    ConflictStep,
     ContextCandidate,
     ContextResolutionResult,
     EffectiveContextResult,
@@ -31,9 +32,16 @@ class _Comparison:
     reason: str
 
 
-def _same_payload(left: ContextCandidate, right: ContextCandidate) -> bool:
-    """Return whether two candidates carry equivalent payload semantics."""
-    return left.value == right.value and left.payload_ref == right.payload_ref
+def _equivalent_context(left: ContextCandidate, right: ContextCandidate) -> bool:
+    """Return whether equal-precedence candidates are semantically interchangeable."""
+    return (
+        left.value == right.value
+        and left.payload_ref == right.payload_ref
+        and left.domain is right.domain
+        and left.sensitivity is right.sensitivity
+        and left.override_policy is right.override_policy
+        and left.matched_dimensions == right.matched_dimensions
+    )
 
 
 def _compare(
@@ -58,7 +66,7 @@ def _compare(
                 reason="higher authority at equal scope specificity",
             )
 
-        if _same_payload(current, challenger):
+        if _equivalent_context(current, challenger):
             winner, loser = sorted(
                 (current, challenger),
                 key=lambda candidate: str(candidate.record_id),
@@ -127,25 +135,23 @@ def _resolve_key_group(
     )
 
     winner = ordered[0]
-    suppressed: list[ContextCandidate] = []
-    reasons: list[str] = []
+    steps: list[ConflictStep] = []
 
     for challenger in ordered[1:]:
         comparison = _compare(winner, challenger)
         winner = comparison.winner
-        suppressed.append(comparison.loser)
-        reasons.append(comparison.reason)
+        steps.append(
+            ConflictStep(
+                winner_record_id=comparison.winner.record_id,
+                suppressed_record_id=comparison.loser.record_id,
+                reason=comparison.reason,
+            )
+        )
 
     return winner, ConflictDecision(
         key=key,
         winner_record_id=winner.record_id,
-        suppressed_record_ids=tuple(
-            sorted(
-                (candidate.record_id for candidate in suppressed),
-                key=str,
-            )
-        ),
-        reasons=tuple(reasons),
+        steps=tuple(steps),
     )
 
 
