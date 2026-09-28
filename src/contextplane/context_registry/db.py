@@ -3,7 +3,17 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import CheckConstraint, DateTime, Index, Integer, String, Text, func
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -12,7 +22,7 @@ from contextplane.persistence.base import Base
 
 
 class ContextItemRecord(Base):
-    """Persisted organizational context item."""
+    """Persisted immutable version of an organizational context item."""
 
     __tablename__ = "context_items"
     __table_args__ = (
@@ -61,10 +71,33 @@ class ContextItemRecord(Base):
             "('manual','git','sharepoint','google_drive','databricks','fabric','api')",
             name="ck_context_items_source_type",
         ),
+        CheckConstraint(
+            "supersedes_id IS NULL OR supersedes_id <> id",
+            name="ck_context_items_no_self_supersession",
+        ),
+        UniqueConstraint(
+            "tenant_id",
+            "logical_id",
+            "version",
+            name="uq_context_items_tenant_logical_version",
+        ),
+        UniqueConstraint("supersedes_id", name="uq_context_items_supersedes_id"),
         Index("ix_context_items_tenant_key", "tenant_id", "key"),
+        Index("ix_context_items_tenant_logical", "tenant_id", "logical_id"),
     )
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
+    logical_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        nullable=False,
+        default=uuid4,
+    )
+    supersedes_id: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("context_items.id", ondelete="RESTRICT"),
+        nullable=True,
+    )
+
     key: Mapped[str] = mapped_column(String(512), nullable=False)
     value: Mapped[dict[str, object] | None] = mapped_column(JSONB(none_as_null=True), nullable=True)
     payload_ref: Mapped[str | None] = mapped_column(Text, nullable=True)
