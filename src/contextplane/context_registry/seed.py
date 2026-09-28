@@ -6,7 +6,7 @@ import hashlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal
+from typing import Literal
 
 import yaml
 from pydantic import ValidationError
@@ -107,14 +107,28 @@ def _find_latest_seed_record(
     *,
     item: ContextItemCreate,
 ) -> ContextItemRecord | None:
-    """Return the latest version for a stable tenant/source seed identity."""
+    """Return the latest version for one unambiguous tenant/source seed identity."""
+    identity_filter = (
+        ContextItemRecord.tenant_id == item.scope.tenant_id,
+        ContextItemRecord.source_type == item.source.type.value,
+        ContextItemRecord.source_identifier == item.source.identifier,
+    )
+    logical_ids = list(
+        session.scalars(
+            select(ContextItemRecord.logical_id)
+            .where(*identity_filter)
+            .distinct()
+        )
+    )
+    if len(logical_ids) > 1:
+        raise SeedFileError(
+            "seed source identity maps to multiple logical context items: "
+            f"{item.scope.tenant_id}/{item.source.type.value}/{item.source.identifier}"
+        )
+
     return session.scalar(
         select(ContextItemRecord)
-        .where(
-            ContextItemRecord.tenant_id == item.scope.tenant_id,
-            ContextItemRecord.source_type == item.source.type.value,
-            ContextItemRecord.source_identifier == item.source.identifier,
-        )
+        .where(*identity_filter)
         .order_by(ContextItemRecord.version.desc())
         .limit(1)
         .with_for_update()
