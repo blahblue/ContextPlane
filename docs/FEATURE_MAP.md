@@ -24,7 +24,7 @@ Status values: **planned**, **partial**, **implemented**, **verified**, **deferr
 | Policy | Allow / deny | Yes | verified | authority admission + deny-safe tie tests |
 | Policy | Mandatory controls | Yes | verified | mandatory allow/deny authority tests |
 | Identity | OIDC | Yes | verified | RS256 issuer/audience/time/signature + malformed-claim tests |
-| Identity | Entra adapter | Yes | planned | tenant fixture |
+| Identity | Entra adapter | Yes | verified | tid/oid/azp-appid mapping + agent/group-overage adversarial tests |
 | Identity | Agent identity | Yes | verified | user/agent/service separation + client ID requirement |
 | Runtime | REST resolver | Yes | planned | end-to-end |
 | Runtime | MCP server | Yes | planned | MCP contract tests |

@@ -132,6 +132,8 @@ Acceptance:
 
 ### PR-011 — Microsoft Entra adapter
 
+**Status:** verified
+
 Dependencies: PR-010
 
 Acceptance:
