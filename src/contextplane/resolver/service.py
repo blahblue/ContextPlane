@@ -2,7 +2,7 @@
 
 from collections.abc import Iterable
 
-from sqlalchemy import or_, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from contextplane.context_registry.db import ContextItemRecord
@@ -37,7 +37,7 @@ _SCOPE_FIELDS = (
 def _latest_active_versions(
     records: Iterable[ContextItemRecord],
 ) -> list[ContextItemRecord]:
-    """Keep only the highest active version of each logical item."""
+    """Keep the highest version whose effective start has been reached."""
     selected: dict[object, ContextItemRecord] = {}
     for record in records:
         selected.setdefault(record.logical_id, record)
@@ -75,10 +75,6 @@ def resolve_context_candidates(
         .where(
             ContextItemRecord.tenant_id == request.scope.tenant_id,
             ContextItemRecord.effective_from <= request.as_of,
-            or_(
-                ContextItemRecord.effective_to.is_(None),
-                ContextItemRecord.effective_to > request.as_of,
-            ),
         )
         .order_by(
             ContextItemRecord.logical_id.asc(),
@@ -86,7 +82,7 @@ def resolve_context_candidates(
         )
     )
 
-    if request.domains:
+    if request.domains is not None:
         query = query.where(
             ContextItemRecord.domain.in_([domain.value for domain in request.domains])
         )
@@ -97,6 +93,11 @@ def resolve_context_candidates(
     explanations: list[CandidateExplanation] = []
 
     for record in active_versions:
+        # Once a newer version has taken effect, an expired successor must not
+        # reactivate an older version in the immutable history.
+        if record.effective_to is not None and record.effective_to <= request.as_of:
+            continue
+
         matches, matched_dimensions = _scope_match(record, request)
         if not matches:
             continue
