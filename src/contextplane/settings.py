@@ -1,6 +1,6 @@
 """Application configuration."""
 
-from pydantic import field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     entra_issuer: str | None = None
     entra_audience: str | None = None
     entra_public_key_pem: str | None = None
+
+    resolution_cache_ttl_seconds: int = Field(default=60, ge=0, le=3600)
+    resolution_cache_max_entries: int = Field(default=1024, ge=1, le=100_000)
 
     @field_validator("database_url")
     @classmethod
