@@ -40,9 +40,7 @@ def get_database_session() -> Iterator[Session]:
         yield session
 
 
-def get_principal_validator(
-    settings: Settings = Depends(get_settings),
-) -> PrincipalValidator:
+def build_principal_validator(settings: Settings) -> PrincipalValidator:
     """Build the configured reference Entra validator or fail unavailable."""
     required = (
         settings.entra_tenant_id,
@@ -74,7 +72,7 @@ def get_principal_validator(
 
 def authenticate_principal(
     credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
-    validator: PrincipalValidator = Depends(get_principal_validator),
+    settings: Settings = Depends(get_settings),
 ) -> Principal:
     """Validate one bearer token and return the normalized principal."""
     if credentials is None or credentials.scheme.lower() != "bearer":
@@ -83,6 +81,8 @@ def authenticate_principal(
             detail="bearer authentication required",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    validator = build_principal_validator(settings)
 
     try:
         return validator.validate(credentials.credentials)
