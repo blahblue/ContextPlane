@@ -49,8 +49,6 @@ def _scope_for_principal(
         user_id=principal.subject if principal.kind is PrincipalKind.USER else None,
         agent_id=principal.subject if principal.kind is PrincipalKind.AGENT else None,
         application=principal.client_id,
-        repository=request.repository,
-        resource=request.resource,
         task=request.task,
         audience=request.audience,
         environment=request.environment,
