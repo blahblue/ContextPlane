@@ -45,6 +45,8 @@ Acceptance:
 
 ### PR-003 — ContextItem and Scope schemas
 
+**Status:** verified
+
 Dependencies: PR-002
 
 Acceptance:
