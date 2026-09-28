@@ -5,6 +5,7 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
+from contextplane.audit.db import ResolutionAuditRecord
 from contextplane.context_graph.db import ContextRelationRecord
 from contextplane.context_registry.db import ContextItemRecord
 from contextplane.settings import Settings
@@ -18,8 +19,11 @@ settings = Settings()
 config.set_main_option("sqlalchemy.url", settings.database_url)
 
 target_metadata = ContextItemRecord.metadata
-if ContextRelationRecord.metadata is not target_metadata:
-    raise RuntimeError("context graph and registry must share SQLAlchemy metadata")
+if (
+    ContextRelationRecord.metadata is not target_metadata
+    or ResolutionAuditRecord.metadata is not target_metadata
+):
+    raise RuntimeError("ContextPlane persistence models must share SQLAlchemy metadata")
 
 
 def run_migrations_offline() -> None:
