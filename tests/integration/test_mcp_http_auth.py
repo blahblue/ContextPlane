@@ -195,24 +195,24 @@ def test_streamable_http_valid_bearer_reaches_tool_as_authenticated_principal(
         transport = httpx2.ASGITransport(app=app)
         headers = {"Authorization": f"Bearer {token}"}
 
-        async with server.session_manager.run():
-            async with (
-                httpx2.AsyncClient(
-                    transport=transport,
-                    base_url=url,
-                    headers=headers,
-                ) as http_client,
-                Client(
-                    streamable_http_client(
-                        url,
-                        http_client=http_client,
-                    )
-                ) as client,
-            ):
-                result = await client.call_tool(
-                    "resolve_context",
-                    {"domains": ["engineering"]},
+        async with (
+            server.session_manager.run(),
+            httpx2.AsyncClient(
+                transport=transport,
+                base_url=url,
+                headers=headers,
+            ) as http_client,
+            Client(
+                streamable_http_client(
+                    url,
+                    http_client=http_client,
                 )
+            ) as client,
+        ):
+            result = await client.call_tool(
+                "resolve_context",
+                {"domains": ["engineering"]},
+            )
 
         assert result.is_error is False
         assert result.structured_content is not None
