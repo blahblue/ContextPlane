@@ -1,0 +1,68 @@
+items:
+  - key: brand.external.voice
+    value:
+      tone: "precise, confident, evidence-oriented"
+      prohibited_style: "unqualified superlatives"
+    domain: brand
+    scope:
+      tenant_id: copilot-demo-org
+      audience: external
+    owner: brand-governance
+    source:
+      type: manual
+      identifier: copilot-demo-external-voice
+    authority_level: standard
+    effective_from: "2026-10-01T00:00:00Z"
+    sensitivity: internal
+    override_policy: deny
+
+  - key: presentation.executive.structure
+    value:
+      max_bullets_per_slide: 5
+      recommendation: "Lead with the decision, then evidence and implications."
+    domain: presentation
+    scope:
+      tenant_id: copilot-demo-org
+      audience: executive
+    owner: executive-communications
+    source:
+      type: manual
+      identifier: copilot-demo-executive-structure
+    authority_level: standard
+    effective_from: "2026-10-01T00:00:00Z"
+    sensitivity: internal
+    override_policy: deny
+
+  - key: presentation.user.marketing
+    value:
+      preference: "Include campaign metric provenance in presenter notes."
+    domain: presentation
+    scope:
+      tenant_id: copilot-demo-org
+      user_id: marketing-user
+      audience: executive
+    owner: marketing-operations
+    source:
+      type: manual
+      identifier: copilot-demo-marketing-user
+    authority_level: preference
+    effective_from: "2026-10-01T00:00:00Z"
+    sensitivity: internal
+    override_policy: allow
+
+  - key: presentation.user.engineering
+    value:
+      preference: "Include a short technical caveat appendix when architecture claims are material."
+    domain: presentation
+    scope:
+      tenant_id: copilot-demo-org
+      user_id: engineering-user
+      audience: executive
+    owner: engineering-leadership
+    source:
+      type: manual
+      identifier: copilot-demo-engineering-user
+    authority_level: preference
+    effective_from: "2026-10-01T00:00:00Z"
+    sensitivity: internal
+    override_policy: allow
