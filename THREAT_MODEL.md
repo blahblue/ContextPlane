@@ -184,7 +184,19 @@ Mitigations:
 - legacy Streamable HTTP is served statelessly;
 - documentation explicitly defines stdio/in-process security as the process boundary.
 
-### T13 — Mandatory-context illusion
+### T13 — MCP helper domain or selector confusion
+
+**Threat:** A model attempts to widen a domain-specific helper by injecting another domain, or an operator treats a model-supplied repository/resource selector as proof of authorization.
+
+**Mitigations:**
+- helper domain sets are fixed in server code and absent from helper tool schemas;
+- every helper delegates to the shared authenticated/policy-governed runtime;
+- identity remains outside helper arguments;
+- repository/resource are documented as applicability selectors only;
+- sensitive underlying resource access must be enforced by policy or a downstream resource boundary;
+- integration tests verify helper domain pinning and repository-scope matching.
+
+### T14 — Mandatory-context illusion
 
 Users assume a “mandatory” instruction guarantees downstream model compliance.
 
@@ -214,6 +226,8 @@ The MVP should include tests for:
 - MCP identity-like argument injection;
 - MCP token without context.resolve permission;
 - MCP invalid bearer token;
+- MCP helper domain-injection attempts;
+- repository/resource selector applicability without treating selectors as identity;
 - audit update/delete attempts;
 - cross-actor audit lookup;
 - audit payload minimization.
