@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "contextplane": {
+      "url": "${env:CONTEXTPLANE_MCP_URL}",
+      "auth": {
+        "CLIENT_ID": "${env:CONTEXTPLANE_CURSOR_CLIENT_ID}",
+        "scopes": ["context.resolve"]
+      }
+    }
+  }
+}

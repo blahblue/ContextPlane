@@ -124,14 +124,18 @@ Exit gate: changing an authoritative rule changes output without editing embedde
 
 ## Phase 8 — Coding-agent demo
 
+**Status: verified in PR-017.**
+
 Deliver:
 
-- Cursor-compatible MCP configuration example;
-- repository-scoped engineering context;
-- security rules;
-- sample coding task.
+- Cursor-compatible MCP configuration example; **verified against current Cursor MCP configuration documentation**
+- repository-scoped engineering context; **verified with checkout-api vs catalog-api**
+- security rules; **verified through get_policy_context for checkout-api**
+- sample coding task; **included in examples/coding-agent**
 
 Exit gate: different repositories receive different context from the same gateway.
+
+Verification: the exact demo YAML fixture is loaded through the production seed path and exercised through the real MCP helper tools. CI proves repository isolation and the mandatory checkout security-control result. Cursor configuration is statically validated and documented; live Cursor/Entra OAuth login is intentionally an operator-run demo rather than a CI dependency.
 
 ## Phase 9 — Governance + audit
 

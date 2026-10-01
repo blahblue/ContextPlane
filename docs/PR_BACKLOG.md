@@ -202,7 +202,9 @@ Acceptance:
 
 ### PR-017 — Coding-agent demo
 
-Dependencies: PR-015
+**Status:** verified
+
+Dependencies: PR-015, PR-016
 
 Acceptance:
 - repository-specific engineering standards resolved through MCP.

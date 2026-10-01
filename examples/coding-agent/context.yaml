@@ -1,0 +1,74 @@
+items:
+  - key: engineering.testing.required
+    value:
+      framework: pytest
+      requirement: "Add or update automated tests for behavior changes."
+    domain: engineering
+    scope:
+      tenant_id: coding-demo-org
+      environment: production
+    owner: platform-engineering
+    source:
+      type: manual
+      identifier: coding-demo-shared-testing
+    authority_level: standard
+    effective_from: "2026-10-01T00:00:00Z"
+    sensitivity: internal
+    override_policy: deny
+
+  - key: engineering.checkout.service_conventions
+    value:
+      framework: FastAPI
+      persistence: SQLAlchemy
+      api_style: "Use typed request/response models and keep route handlers thin."
+    domain: engineering
+    scope:
+      tenant_id: coding-demo-org
+      repository: checkout-api
+      environment: production
+    owner: checkout-platform
+    source:
+      type: manual
+      identifier: coding-demo-checkout-conventions
+    authority_level: standard
+    effective_from: "2026-10-01T00:00:00Z"
+    sensitivity: internal
+    override_policy: deny
+
+  - key: engineering.catalog.service_conventions
+    value:
+      framework: Django
+      persistence: Django ORM
+      api_style: "Keep domain logic in services rather than views."
+    domain: engineering
+    scope:
+      tenant_id: coding-demo-org
+      repository: catalog-api
+      environment: production
+    owner: catalog-platform
+    source:
+      type: manual
+      identifier: coding-demo-catalog-conventions
+    authority_level: standard
+    effective_from: "2026-10-01T00:00:00Z"
+    sensitivity: internal
+    override_policy: deny
+
+  - key: security.checkout.secret_handling
+    value:
+      log_secrets: false
+      approved_source: "enterprise secret store"
+      requirement: "Never place bearer tokens, passwords, or API keys in source or logs."
+    domain: security
+    scope:
+      tenant_id: coding-demo-org
+      repository: checkout-api
+      environment: production
+    owner: security-engineering
+    source:
+      type: manual
+      identifier: coding-demo-checkout-secret-handling
+    authority_level: mandatory_control
+    effective_from: "2026-10-01T00:00:00Z"
+    sensitivity: restricted
+    override_policy: deny

@@ -83,6 +83,7 @@ The MVP will keep graph relationships in PostgreSQL rather than introduce a dedi
 - [Feature map](docs/FEATURE_MAP.md)
 - [Verification loop](docs/VERIFICATION.md)
 - [Architecture decisions](docs/adr/)
+- [Coding-agent demo](examples/coding-agent/README.md)
 
 ## First milestone
 

@@ -32,7 +32,7 @@ Status values: **planned**, **partial**, **implemented**, **verified**, **deferr
 | Runtime | MCP domain helpers | Yes | verified | fixed-domain helper schemas + policy/domain/repository integration tests |
 | Runtime | Python SDK | Yes | planned | SDK integration |
 | Audit | Resolution log | Yes | verified | append-only DB trigger + success/deny/conflict + actor-scoped lookup tests |
-| Client | Coding-agent demo | Yes | planned | reproducible scenario |
+| Client | Coding-agent demo | Yes | verified | exact seed fixture + repository-specific MCP helper integration + Cursor config validation |
 | Client | Copilot Studio demo | Yes | planned | reproducible scenario |
 | Sources | YAML seed | Yes | verified | canonical checksum + idempotency + immutable supersession |
 | Sources | Git adapter | No | deferred | — |
