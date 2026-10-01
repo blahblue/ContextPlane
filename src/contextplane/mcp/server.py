@@ -119,34 +119,8 @@ def build_mcp_server(
     server = MCPServer("ContextPlane", **kwargs)
     resolve_principal = principal_provider or _authenticated_principal
 
-    @server.tool(
-        name="resolve_context",
-        description=(
-            "Resolve the governed organizational context that applies to the "
-            "authenticated caller and requested task. Identity is supplied by "
-            "the MCP authentication boundary, not by tool arguments."
-        ),
-        structured_output=True,
-    )
-    def resolve_context(
-        domains: list[ContextDomain],
-        keys: list[str] | None = None,
-        task: str | None = None,
-        audience: str | None = None,
-        environment: str | None = None,
-    ) -> ResolveContextResponse:
-        """Resolve organizational context through the shared ContextPlane runtime."""
-        try:
-            request = ResolveContextRequest(
-                domains=frozenset(domains),
-                keys=None if keys is None else frozenset(keys),
-                task=task,
-                audience=audience,
-                environment=environment,
-            )
-        except ValueError:
-            raise ToolError("invalid context request") from None
-
+    def execute_runtime(request: ResolveContextRequest) -> ResolveContextResponse:
+        """Execute one MCP tool through the shared governed runtime."""
         principal = resolve_principal()
 
         try:
@@ -168,6 +142,148 @@ def build_mcp_server(
             raise ToolError(
                 f"context governance conflict; resolution_id={exc.resolution_id}"
             ) from None
+
+    def build_request(
+        *,
+        domains: frozenset[ContextDomain],
+        keys: list[str] | None,
+        task: str | None,
+        audience: str | None,
+        environment: str | None,
+        repository: str | None,
+        resource: str | None,
+    ) -> ResolveContextRequest:
+        """Validate model-controlled selectors without exposing identity."""
+        try:
+            return ResolveContextRequest(
+                domains=domains,
+                keys=None if keys is None else frozenset(keys),
+                task=task,
+                audience=audience,
+                environment=environment,
+                repository=repository,
+                resource=resource,
+            )
+        except ValueError:
+            raise ToolError("invalid context request") from None
+
+    @server.tool(
+        name="resolve_context",
+        description=(
+            "Resolve the governed organizational context that applies to the "
+            "authenticated caller and requested task. Identity is supplied by "
+            "the MCP authentication boundary, not by tool arguments."
+        ),
+        structured_output=True,
+    )
+    def resolve_context(
+        domains: list[ContextDomain],
+        keys: list[str] | None = None,
+        task: str | None = None,
+        audience: str | None = None,
+        environment: str | None = None,
+        repository: str | None = None,
+        resource: str | None = None,
+    ) -> ResolveContextResponse:
+        """Resolve organizational context through the shared ContextPlane runtime."""
+        return execute_runtime(
+            build_request(
+                domains=frozenset(domains),
+                keys=keys,
+                task=task,
+                audience=audience,
+                environment=environment,
+                repository=repository,
+                resource=resource,
+            )
+        )
+
+    @server.tool(
+        name="get_engineering_context",
+        description=(
+            "Resolve governed engineering standards and conventions for the "
+            "authenticated caller. The engineering domain is fixed by the server."
+        ),
+        structured_output=True,
+    )
+    def get_engineering_context(
+        keys: list[str] | None = None,
+        task: str | None = None,
+        environment: str | None = None,
+        repository: str | None = None,
+        resource: str | None = None,
+    ) -> ResolveContextResponse:
+        """Resolve only engineering context through the shared runtime."""
+        return execute_runtime(
+            build_request(
+                domains=frozenset({ContextDomain.ENGINEERING}),
+                keys=keys,
+                task=task,
+                audience=None,
+                environment=environment,
+                repository=repository,
+                resource=resource,
+            )
+        )
+
+    @server.tool(
+        name="get_brand_presentation_context",
+        description=(
+            "Resolve governed brand and presentation context for the authenticated "
+            "caller. Brand and presentation domains are fixed by the server."
+        ),
+        structured_output=True,
+    )
+    def get_brand_presentation_context(
+        keys: list[str] | None = None,
+        task: str | None = None,
+        audience: str | None = None,
+        environment: str | None = None,
+        resource: str | None = None,
+    ) -> ResolveContextResponse:
+        """Resolve brand and presentation context through the shared runtime."""
+        return execute_runtime(
+            build_request(
+                domains=frozenset(
+                    {ContextDomain.BRAND, ContextDomain.PRESENTATION}
+                ),
+                keys=keys,
+                task=task,
+                audience=audience,
+                environment=environment,
+                repository=None,
+                resource=resource,
+            )
+        )
+
+    @server.tool(
+        name="get_policy_context",
+        description=(
+            "Resolve governed security and mandatory-control context for the "
+            "authenticated caller. The security domain is fixed by the server."
+        ),
+        structured_output=True,
+    )
+    def get_policy_context(
+        keys: list[str] | None = None,
+        task: str | None = None,
+        audience: str | None = None,
+        environment: str | None = None,
+        repository: str | None = None,
+        resource: str | None = None,
+    ) -> ResolveContextResponse:
+        """Resolve security/policy context through the shared runtime."""
+        return execute_runtime(
+            build_request(
+                domains=frozenset({ContextDomain.SECURITY}),
+                keys=keys,
+                task=task,
+                audience=audience,
+                environment=environment,
+                repository=repository,
+                resource=resource,
+            )
+        )
 
     return server
 

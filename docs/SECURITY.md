@@ -154,7 +154,9 @@ The reference CLI serves Streamable HTTP with stateless legacy transport behavio
 
 MCP bearer authentication does not protect stdio or in-process transports. For those transports, the launcher/embedding process is the trust boundary.
 
-See ADR-014 and [MCP.md](MCP.md).
+Domain-specific MCP helpers fix their domains in server code and do not expose domain selection to the model. Repository/resource arguments are applicability selectors only; they must never be interpreted as proof that a principal is authorized to access the underlying repository/resource.
+
+See ADR-014, ADR-015, and [MCP.md](MCP.md).
 
 ## Prompt injection rule
 

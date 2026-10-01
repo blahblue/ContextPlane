@@ -75,6 +75,8 @@ def _scope_for_principal(
         task=request.task,
         audience=request.audience,
         environment=request.environment,
+        repository=request.repository,
+        resource=request.resource,
     )
 
 
@@ -84,6 +86,8 @@ def _selector_dimensions(request: ResolveContextRequest) -> tuple[str, ...]:
         "task": request.task,
         "audience": request.audience,
         "environment": request.environment,
+        "repository": request.repository,
+        "resource": request.resource,
     }
     return tuple(sorted(name for name, value in values.items() if value is not None))
 

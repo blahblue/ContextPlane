@@ -20,6 +20,48 @@ Identity is intentionally **not** a tool argument.
 
 For remote Streamable HTTP, tenant, subject, principal kind, client/application identity, roles, groups, and scopes come from the authenticated bearer-token boundary.
 
+
+## Domain helper tools
+
+ContextPlane also exposes narrower semantic helpers. These are constrained views over the same shared runtime, not separate retrieval implementations.
+
+```text
+get_engineering_context(
+  keys?,
+  task?,
+  environment?,
+  repository?,
+  resource?
+)
+
+get_brand_presentation_context(
+  keys?,
+  task?,
+  audience?,
+  environment?,
+  resource?
+)
+
+get_policy_context(
+  keys?,
+  task?,
+  audience?,
+  environment?,
+  repository?,
+  resource?
+)
+```
+
+The helper domain sets are fixed by the server:
+
+- `get_engineering_context` -> engineering;
+- `get_brand_presentation_context` -> brand + presentation;
+- `get_policy_context` -> security context, including security-policy and mandatory-control context stored in the registry.
+
+A helper invocation still performs authentication, policy evaluation, context resolution, precedence, cache validation, provenance loading, and audit creation through `resolve_context_runtime`.
+
+Repository and resource are applicability selectors. They are not identity claims or authorization grants. A sensitive underlying resource still needs an enforceable authorization boundary.
+
 ## Reference authentication
 
 The reference server uses Microsoft Entra through the existing ContextPlane Entra validator.

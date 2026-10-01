@@ -32,6 +32,8 @@ class ResolveContextRequest(BaseModel):
     task: NonEmptySelector | None = None
     audience: NonEmptySelector | None = None
     environment: NonEmptySelector | None = None
+    repository: NonEmptySelector | None = None
+    resource: NonEmptySelector | None = None
 
 
 class ContextProvenance(BaseModel):
