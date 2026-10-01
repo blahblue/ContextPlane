@@ -99,16 +99,18 @@ Exit gate: identity + policy + graph + audit succeed end to end.
 
 ## Phase 6 — MCP
 
-**Authenticated shared-runtime MCP server: verified in PR-015. Domain helper tools remain PR-016.**
+**Authenticated shared-runtime MCP server: verified in PR-015. Domain helper tools: verified in PR-016.**
 
 Deliver:
 
 - MCP server wrapping the same resolver; **verified in PR-015 via protocol-independent runtime service**
 - `resolve_context`; **verified in PR-015**
-- context-specific helper tools;
+- context-specific helper tools; **verified in PR-016**
 - contract tests.
 
 Exit gate: two clients produce equivalent resolver results.
+
+PR-016 verification confirms engineering, brand/presentation, and security-policy helpers remain constrained views over the same governed runtime. Repository/resource selectors are applicability dimensions, not authorization credentials.
 
 ## Phase 7 — Copilot Studio demo
 
