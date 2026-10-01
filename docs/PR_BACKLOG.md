@@ -191,6 +191,8 @@ Acceptance:
 
 ### PR-016 — Domain helper tools
 
+**Status:** verified
+
 Dependencies: PR-015
 
 Acceptance:
