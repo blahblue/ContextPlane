@@ -1,6 +1,11 @@
 """Authentication and normalized identity primitives."""
 
-from contextplane.auth.domain import Principal, PrincipalKind, PrincipalValidator
+from contextplane.auth.domain import (
+    Principal,
+    PrincipalKind,
+    PrincipalValidator,
+    principal_has_permission,
+)
 from contextplane.auth.entra import (
     EntraValidatorConfig,
     StaticKeyEntraValidator,
@@ -20,6 +25,7 @@ __all__ = [
     "Principal",
     "PrincipalKind",
     "PrincipalValidator",
+    "principal_has_permission",
     "StaticKeyOIDCValidator",
     "StaticKeyEntraValidator",
     "principal_from_oidc_claims",

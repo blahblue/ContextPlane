@@ -180,6 +180,8 @@ Acceptance:
 
 ### PR-015 — MCP server
 
+**Status:** verified
+
 Dependencies: PR-012
 
 Acceptance:

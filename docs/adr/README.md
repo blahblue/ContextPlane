@@ -17,6 +17,7 @@ Current ADRs:
 - [ADR-011 — Derive runtime identity scope from the authenticated principal](011-runtime-identity-scope.md)
 - [ADR-012 — Persist resolution audits as append-only, payload-minimized records](012-append-only-resolution-audit.md)
 - [ADR-013 — Cache candidate resolution only across identical identity and version state](013-resolution-cache-boundary.md)
+- [ADR-014 — Keep MCP as an authenticated adapter over the shared runtime](014-mcp-shared-runtime.md)
 
 New ADRs should use a short sequential number and include:
 

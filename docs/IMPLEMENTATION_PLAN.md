@@ -99,10 +99,12 @@ Exit gate: identity + policy + graph + audit succeed end to end.
 
 ## Phase 6 — MCP
 
+**Authenticated shared-runtime MCP server: verified in PR-015. Domain helper tools remain PR-016.**
+
 Deliver:
 
-- MCP server wrapping the same resolver;
-- `resolve_context`;
+- MCP server wrapping the same resolver; **verified in PR-015 via protocol-independent runtime service**
+- `resolve_context`; **verified in PR-015**
 - context-specific helper tools;
 - contract tests.
 
