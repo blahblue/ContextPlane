@@ -18,8 +18,10 @@ As of 2026-10-01, Microsoft's current Copilot Studio documentation supports addi
 
 The Microsoft feature is documented as preview and can change. Re-check the linked Microsoft documentation before a live demo.
 
-Microsoft reference:
-https://learn.microsoft.com/en-us/microsoft-copilot-studio/agents-experience/tools-add-mcp-server
+Microsoft references:
+- https://learn.microsoft.com/en-us/microsoft-copilot-studio/agents-experience/tools-add-mcp-server
+- https://learn.microsoft.com/en-us/microsoft-copilot-studio/mcp-add-components-to-agent
+- https://learn.microsoft.com/en-us/microsoft-copilot-studio/mcp-create-new-server
 
 ## Demo architecture
 
@@ -90,7 +92,11 @@ In the new Copilot Studio experience:
   - `get_brand_presentation_context`
   - `get_policy_context`.
 
-Microsoft's direct-MCP UI documentation describes supported authentication configuration generically rather than guaranteeing one specific Entra flow for every tenant/runtime combination. Validate the actual token received by ContextPlane before presenting the identity-aware portion as production-ready.
+For this demo, turn off **Allow all** and enable only `get_brand_presentation_context`. Copilot Studio currently supports enabling/disabling individual tools from an MCP server, which keeps the agent's available tool surface aligned with the scenario.
+
+Microsoft's direct-MCP documentation describes supported authentication configuration generically rather than guaranteeing one specific Entra flow for every tenant/runtime combination. OAuth 2.0 is a supported MCP authentication option, but validate the actual token received by ContextPlane before presenting the identity-aware portion as production-ready.
+
+Copilot Studio MCP connectivity is implemented through Power Platform connector infrastructure. Microsoft documents that Power Platform data policies can regulate access to MCP servers and their tools. Treat those platform controls as an additional governance layer, not a replacement for ContextPlane's own authentication and policy checks.
 
 ## 4. Run the scenario
 
