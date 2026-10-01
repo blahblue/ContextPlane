@@ -48,6 +48,8 @@ def context_item(
     checksum_char: str,
     user_id: str | None = None,
     application: str | None = None,
+    repository: str | None = None,
+    resource: str | None = None,
     domain: ContextDomain = ContextDomain.ENGINEERING,
 ) -> ContextItemCreate:
     return ContextItemCreate(
@@ -58,6 +60,8 @@ def context_item(
             tenant_id=tenant_id,
             user_id=user_id,
             application=application,
+            repository=repository,
+            resource=resource,
         ),
         owner="api-test-owner",
         source=ContextSource(
@@ -210,12 +214,55 @@ def test_body_cannot_supply_identity_scope() -> None:
             "domains": ["engineering"],
             "tenant_id": "attacker-tenant",
             "user_id": "other-user",
-            "repository": "sensitive-repo",
-            "resource": "sensitive-resource",
         },
     )
 
     assert response.status_code == 422
+
+
+def test_repository_and_resource_are_context_selectors_not_identity(engine) -> None:
+    tenant_id = f"api-resource-{uuid4()}"
+
+    with Session(engine) as session:
+        create_context_item(
+            session,
+            context_item(
+                tenant_id=tenant_id,
+                key="engineering.repo-resource",
+                value="scoped",
+                checksum_char="7",
+                repository="checkout-api",
+                resource="payments-service",
+            ),
+        )
+        session.commit()
+
+    authenticate_as(principal(tenant_id))
+    client = TestClient(app)
+
+    matching = post(
+        client,
+        {
+            "domains": ["engineering"],
+            "repository": "checkout-api",
+            "resource": "payments-service",
+        },
+    )
+    nonmatching = post(
+        client,
+        {
+            "domains": ["engineering"],
+            "repository": "catalog-api",
+            "resource": "payments-service",
+        },
+    )
+
+    assert matching.status_code == 200
+    assert [item["key"] for item in matching.json()["context"]] == [
+        "engineering.repo-resource"
+    ]
+    assert nonmatching.status_code == 200
+    assert nonmatching.json()["context"] == []
 
 
 def test_policy_narrowing_filters_before_effective_context(engine) -> None:
