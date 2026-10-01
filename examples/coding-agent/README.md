@@ -32,7 +32,13 @@ The fixture is:
 examples/coding-agent/context.yaml
 ```
 
-Load it through the existing ContextPlane seed-loader workflow into a local database. The fixture uses tenant `coding-demo-org`.
+Load it into the database configured by `CONTEXTPLANE_DATABASE_URL`:
+
+```bash
+python examples/coding-agent/load_seed.py
+```
+
+The loader uses the same validated/idempotent ContextPlane seed path as the runtime tests. The fixture uses tenant `coding-demo-org`.
 
 The corpus contains:
 
@@ -129,6 +135,8 @@ The coding-agent context should change without editing:
 - the agent's embedded prompt.
 
 That is the core demo: organizational context lives in ContextPlane rather than being copied into every coding client.
+
+The demo's Cursor configuration format and static OAuth fields were checked against Cursor's MCP documentation on 2026-10-01. Treat the linked Cursor documentation as authoritative if the client configuration format changes.
 
 ## Security boundary
 
