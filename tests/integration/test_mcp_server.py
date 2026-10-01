@@ -21,6 +21,7 @@ from contextplane.context_registry import (
 from contextplane.context_registry.repository import create_context_item
 from contextplane.database import build_engine
 from contextplane.mcp import build_mcp_server
+from contextplane.policy import PolicyEffect, PolicyRule
 from contextplane.settings import Settings
 
 pytestmark = pytest.mark.integration
@@ -409,3 +410,42 @@ def test_helper_tool_cannot_select_another_domain(engine) -> None:
     assert result.structured_content is not None
     assert result.structured_content["tenant_id"] == tenant_id
     assert result.structured_content["policy"]["allowed_domains"] == ["engineering"]
+
+
+
+def test_policy_helper_does_not_bypass_runtime_policy(engine) -> None:
+    tenant_id = f"mcp-helper-policy-{uuid4()}"
+
+    with Session(engine) as session:
+        create_context_item(
+            session,
+            create_domain_item(
+                tenant_id=tenant_id,
+                key="security.restricted",
+                domain=ContextDomain.SECURITY,
+                checksum_char="3",
+                value="must-not-return",
+            ),
+        )
+        session.commit()
+
+    deny_rule = PolicyRule(
+        rule_id="deny-security-helper",
+        tenant_id=tenant_id,
+        authority_level=AuthorityLevel.MANDATORY_CONTROL,
+        effect=PolicyEffect.DENY,
+        target_domains=frozenset({ContextDomain.SECURITY}),
+        reason="security context denied for this principal surface",
+    )
+    server = build_mcp_server(
+        engine=engine,
+        cache=InMemoryResolutionCache(ttl_seconds=60, max_entries=16),
+        rules_provider=lambda: (deny_rule,),
+        principal_provider=lambda: principal(tenant_id),
+    )
+
+    result = asyncio.run(server.call_tool("get_policy_context", {}))
+
+    assert result.structured_content is not None
+    assert result.structured_content["policy"]["decision"] == "deny"
+    assert result.structured_content["context"] == []
