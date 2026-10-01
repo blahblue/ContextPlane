@@ -29,6 +29,7 @@ Status values: **planned**, **partial**, **implemented**, **verified**, **deferr
 | Runtime | REST resolver | Yes | verified | auth + policy + resolver + precedence + provenance E2E |
 | Runtime | Resolution cache | Yes | verified | principal/revision/policy keying + DB trigger + temporal-expiry tests |
 | Runtime | MCP server | Yes | verified | shared-runtime + tool schema + Entra verifier + MCP integration tests |
+| Runtime | MCP domain helpers | Yes | verified | fixed-domain helper schemas + policy/domain/repository integration tests |
 | Runtime | Python SDK | Yes | planned | SDK integration |
 | Audit | Resolution log | Yes | verified | append-only DB trigger + success/deny/conflict + actor-scoped lookup tests |
 | Client | Coding-agent demo | Yes | planned | reproducible scenario |
