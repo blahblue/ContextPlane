@@ -125,6 +125,10 @@ For authenticated subject `engineering-user`, it instead returns:
 
 The user identity is not supplied in the tool call.
 
+The literal subjects `marketing-user` and `engineering-user` are deterministic demo fixtures. In the live Microsoft Entra path, ContextPlane's Entra adapter uses the token's immutable `oid` value as the user subject; do not map authorization to mutable email/UPN/display-name claims.
+
+The current ContextPlane scope model treats `audience` as a single scalar dimension, so this demo uses separate `executive` and `external` calls. That is a ContextPlane modeling choice in this MVP, not a Copilot Studio limitation.
+
 For the external-brand call:
 
 ```text
@@ -160,6 +164,8 @@ ContextPlane enforces:
 ContextPlane does **not**, by merely returning a mandatory instruction, force the language model's final prose to comply.
 
 For controls that must be enforceable, put the boundary around the protected action or data, or add deterministic validation before/after generation. Do not treat a prompt instruction such as "always call ContextPlane" as a security control.
+
+This is the same architectural rule captured in [ADR-003](../../docs/adr/003-context-vs-enforcement.md).
 
 ## CI verification boundary
 
