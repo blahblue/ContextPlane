@@ -186,3 +186,31 @@ def test_copilot_helper_schema_exposes_no_identity_selector(engine) -> None:
         "groups",
         "scopes",
     }.isdisjoint(properties)
+
+
+
+def test_copilot_demo_does_not_cross_tenant_boundary(engine) -> None:
+    with Session(engine) as session:
+        load_seed_file(session, FIXTURE)
+        session.commit()
+
+    cache = InMemoryResolutionCache(ttl_seconds=60, max_entries=32)
+    outsider = build_mcp_server(
+        engine=engine,
+        cache=cache,
+        rules_provider=tuple,
+        principal_provider=lambda: Principal(
+            tenant_id="other-tenant",
+            subject="marketing-user",
+            kind=PrincipalKind.USER,
+            client_id="copilot-studio-demo-client",
+            roles=frozenset({"proposal-author"}),
+            groups=frozenset({"demo-users"}),
+            scopes=frozenset({"context.resolve"}),
+        ),
+    )
+
+    result = call(outsider, audience="executive")
+
+    assert result["tenant_id"] == "other-tenant"
+    assert result["context"] == []
