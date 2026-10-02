@@ -3,7 +3,7 @@ from uuid import UUID, uuid4
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, update
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
 
