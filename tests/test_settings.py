@@ -28,11 +28,13 @@ def test_settings_fail_closed_when_database_url_is_missing(
 
 
 
-def test_database_tls_requirement_rejects_unprotected_url() -> None:
+@pytest.mark.parametrize("suffix", ["", "?sslmode=disable", "?sslmode=allow", "?sslmode=prefer"])
+def test_database_tls_requirement_rejects_unprotected_url(suffix: str) -> None:
     with pytest.raises(ValidationError, match="database_require_tls"):
         Settings(
             database_url=(
                 "postgresql+psycopg://user:pass@db.example.test:5432/contextplane"
+                f"{suffix}"
             ),
             database_require_tls=True,
             _env_file=None,
