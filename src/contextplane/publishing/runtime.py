@@ -28,7 +28,6 @@ from contextplane.persistence.tenant import bind_session_tenant
 from contextplane.publishing.db import PublicationAuditRecord
 from contextplane.publishing.domain import (
     PublicationAction,
-    PublicationAuthorization,
     PublicationOutcome,
     PublicationPermission,
     PublishContextRequest,
