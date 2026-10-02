@@ -6,7 +6,7 @@ from enum import StrEnum
 from typing import Annotated
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, JsonValue, StringConstraints, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, JsonValue, StringConstraints, field_validator, model_validator
 
 from contextplane.auth import PrincipalKind
 from contextplane.context_registry.domain import (
