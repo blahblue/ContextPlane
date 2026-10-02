@@ -248,7 +248,7 @@ Acceptance:
 
 ### PR-024 — Publishing authorization model
 
-**Status:** in progress
+**Status:** verified
 
 Dependencies: PR-023
 
