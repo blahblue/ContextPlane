@@ -69,7 +69,103 @@ def upgrade() -> None:
         sa.CheckConstraint("action IN ('create','supersede')", name="ck_publication_audit_action"),
         sa.CheckConstraint("authority_level IN ('preference','recommendation','standard','policy','mandatory_control')", name="ck_publication_audit_authority"),
         sa.CheckConstraint("outcome IN ('succeeded','denied','conflict')", name="ck_publication_audit_outcome"),
-        sa.CheckConstraint("idempotency_key_hash ~ '^[0-9a-f]{64}$'", name="ck_publication_audit_idempotency_hash"),
+        sa.CheckConstraint(
+            "permission_used IS NULL OR permission_used IN ("
+            "'context.publish.preference.self',"
+            "'context.publish.preference',"
+            "'context.publish.recommendation',"
+            "'context.publish.standard',"
+            "'context.publish.policy',"
+            "'context.publish.mandatory_control'"
+            ")",
+            name="ck_publication_audit_permission",
+        ),
+        sa.CheckConstraint(
+            "("
+            "outcome = 'succeeded' AND permission_used IS NOT NULL "
+            "AND context_record_id IS NOT NULL AND logical_id IS NOT NULL "
+            "AND version IS NOT NULL AND version > 0 AND error_code IS NULL"
+            ") OR ("
+            "outcome = 'denied' AND permission_used IS NULL "
+            "AND context_record_id IS NULL AND logical_id IS NULL "
+            "AND version IS NULL AND error_code IS NOT NULL"
+            ") OR ("
+            "outcome = 'conflict' AND permission_used IS NOT NULL "
+            "AND context_record_id IS NULL AND logical_id IS NULL "
+            "AND version IS NULL AND error_code IS NOT NULL"
+            ")",
+            name="ck_publication_audit_outcome_shape",
+        ),
+        sa.CheckConstraint("idempotency_key_hash ~ '^[0-9a-f]{64}
+        sa.CheckConstraint("request_hash ~ '^[0-9a-f]{64}$'", name="ck_publication_audit_request_hash"),
+        sa.CheckConstraint("key_hash ~ '^[0-9a-f]{64}$'", name="ck_publication_audit_key_hash"),
+    )
+    op.create_index("ix_publication_audit_tenant", "publication_audit", ["tenant_id"])
+    op.execute(
+        """
+        CREATE UNIQUE INDEX uq_publication_audit_actor_idempotency
+        ON publication_audit (
+            tenant_id,
+            principal_kind,
+            principal_subject,
+            COALESCE(client_id, ''),
+            idempotency_key_hash
+        )
+        """
+    )
+    op.execute("ALTER TABLE publication_audit ENABLE ROW LEVEL SECURITY")
+    op.execute(
+        """
+        CREATE POLICY publication_audit_tenant_isolation
+        ON publication_audit
+        USING (
+            tenant_id = NULLIF(current_setting('contextplane.tenant_id', true), '')
+        )
+        WITH CHECK (
+            tenant_id = NULLIF(current_setting('contextplane.tenant_id', true), '')
+        )
+        """
+    )
+    op.execute(
+        """
+        CREATE FUNCTION contextplane_reject_publication_audit_mutation()
+        RETURNS trigger
+        LANGUAGE plpgsql
+        AS $$
+        BEGIN
+            RAISE EXCEPTION 'publication audit records are immutable';
+        END;
+        $$
+        """
+    )
+    op.execute(
+        """
+        CREATE TRIGGER trg_publication_audit_immutable
+        BEFORE UPDATE OR DELETE ON publication_audit
+        FOR EACH ROW
+        EXECUTE FUNCTION contextplane_reject_publication_audit_mutation()
+        """
+    )
+
+
+def downgrade() -> None:
+    op.execute("DROP TRIGGER IF EXISTS trg_publication_audit_immutable ON publication_audit")
+    op.execute("DROP FUNCTION IF EXISTS contextplane_reject_publication_audit_mutation()")
+    op.execute("DROP POLICY IF EXISTS publication_audit_tenant_isolation ON publication_audit")
+    op.execute("ALTER TABLE publication_audit DISABLE ROW LEVEL SECURITY")
+    op.drop_index("uq_publication_audit_actor_idempotency", table_name="publication_audit")
+    op.drop_index("ix_publication_audit_tenant", table_name="publication_audit")
+    op.drop_table("publication_audit")
+    op.drop_constraint("ck_context_items_publication_provenance_shape", "context_items", type_="check")
+    for column in (
+        "publication_permission",
+        "publication_action",
+        "publisher_client_id",
+        "publisher_kind",
+        "publisher_subject",
+    ):
+        op.drop_column("context_items", column)
+", name="ck_publication_audit_idempotency_hash"),
         sa.CheckConstraint("request_hash ~ '^[0-9a-f]{64}$'", name="ck_publication_audit_request_hash"),
         sa.CheckConstraint("key_hash ~ '^[0-9a-f]{64}$'", name="ck_publication_audit_key_hash"),
     )
