@@ -27,8 +27,8 @@ class ResolveContextRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    domains: frozenset[ContextDomain] = Field(min_length=1)
-    keys: frozenset[NonEmptySelector] | None = None
+    domains: frozenset[ContextDomain] = Field(min_length=1, max_length=4)
+    keys: frozenset[NonEmptySelector] | None = Field(default=None, max_length=100)
     task: NonEmptySelector | None = None
     audience: NonEmptySelector | None = None
     environment: NonEmptySelector | None = None
