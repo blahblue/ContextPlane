@@ -1,11 +1,25 @@
-"""Authorization model for authenticated context publishing."""
+"""Authenticated publishing contracts and persisted audit semantics."""
 
+from datetime import datetime
 from enum import StrEnum
+from typing import Annotated
+from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, JsonValue, StringConstraints, field_validator, model_validator
 
 from contextplane.auth import PrincipalKind
-from contextplane.context_registry.domain import AuthorityLevel
+from contextplane.context_registry.domain import (
+    AuthorityLevel,
+    ContextDomain,
+    OverridePolicy,
+    SensitivityLevel,
+    SourceType,
+)
+
+NonEmptyPublicationString = Annotated[
+    str,
+    StringConstraints(strip_whitespace=True, min_length=1, max_length=512),
+]
 
 
 class PublicationAction(StrEnum):
@@ -35,6 +49,91 @@ class PublicationAuthorization(BaseModel):
     subject: str
     principal_kind: PrincipalKind
     client_id: str | None
+    action: PublicationAction
+    authority_level: AuthorityLevel
+    permission_used: PublicationPermission
+
+
+class PublicationScopeInput(BaseModel):
+    """Client-controlled applicability scope; tenant identity is server-derived."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    business_unit: NonEmptyPublicationString | None = None
+    team: NonEmptyPublicationString | None = None
+    role: NonEmptyPublicationString | None = None
+    user_id: NonEmptyPublicationString | None = None
+    agent_id: NonEmptyPublicationString | None = None
+    application: NonEmptyPublicationString | None = None
+    repository: NonEmptyPublicationString | None = None
+    resource: NonEmptyPublicationString | None = None
+    task: NonEmptyPublicationString | None = None
+    audience: NonEmptyPublicationString | None = None
+    environment: NonEmptyPublicationString | None = None
+
+
+class PublicationSourceInput(BaseModel):
+    """Semantic provenance supplied by an authorized publisher."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    type: SourceType
+    identifier: NonEmptyPublicationString
+    uri: NonEmptyPublicationString | None = None
+
+
+class PublishContextRequest(BaseModel):
+    """External authenticated write contract without tenant/publisher/checksum fields."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    key: NonEmptyPublicationString
+    value: dict[str, JsonValue] | None = None
+    payload_ref: NonEmptyPublicationString | None = None
+    domain: ContextDomain
+    scope: PublicationScopeInput = PublicationScopeInput()
+    owner: NonEmptyPublicationString
+    source: PublicationSourceInput
+    authority_level: AuthorityLevel
+    effective_from: datetime
+    effective_to: datetime | None = None
+    sensitivity: SensitivityLevel
+    override_policy: OverridePolicy
+
+    @field_validator("effective_from", "effective_to")
+    @classmethod
+    def require_timezone(cls, value: datetime | None) -> datetime | None:
+        if value is not None and (value.tzinfo is None or value.utcoffset() is None):
+            raise ValueError("effective timestamps must be timezone-aware")
+        return value
+
+    @model_validator(mode="after")
+    def validate_payload_and_window(self) -> "PublishContextRequest":
+        if (self.value is None) == (self.payload_ref is None):
+            raise ValueError("exactly one of value or payload_ref must be provided")
+        if self.effective_to is not None and self.effective_to <= self.effective_from:
+            raise ValueError("effective_to must be later than effective_from")
+        return self
+
+
+class PublicationOutcome(StrEnum):
+    """Persisted publication attempt result."""
+
+    SUCCEEDED = "succeeded"
+    DENIED = "denied"
+    CONFLICT = "conflict"
+
+
+class PublishContextResponse(BaseModel):
+    """Idempotent safe response for an authenticated publication."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    publication_id: UUID
+    record_id: UUID
+    logical_id: UUID
+    version: int
+    checksum: str
     action: PublicationAction
     authority_level: AuthorityLevel
     permission_used: PublicationPermission
