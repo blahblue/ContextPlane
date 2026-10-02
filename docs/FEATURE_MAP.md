@@ -32,6 +32,7 @@ Status values: **planned**, **partial**, **implemented**, **verified**, **deferr
 | Runtime | MCP domain helpers | Yes | verified | fixed-domain helper schemas + policy/domain/repository integration tests |
 | Runtime | Python SDK | Yes | planned | SDK integration |
 | Audit | Resolution log | Yes | verified | append-only DB trigger + success/deny/conflict + actor-scoped lookup tests |
+| Security | Adversarial regression suite | Yes | verified | 25-scenario threat matrix + cross-component runtime/policy/cache tests |
 | Client | Coding-agent demo | Yes | verified | exact seed fixture + repository-specific MCP helper integration + Cursor config validation |
 | Client | Copilot Studio demo | Yes | verified | identity-aware MCP helper demo + cross-user/tenant isolation + authoritative-update tests |
 | Sources | YAML seed | Yes | verified | canonical checksum + idempotency + immutable supersession |
