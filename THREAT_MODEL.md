@@ -1,7 +1,7 @@
 # Threat Model
 
 Status: draft  
-Last updated: 2026-10-01
+Last updated: 2026-10-02
 
 ## Scope
 
@@ -112,14 +112,17 @@ Current publishing hardening:
 
 - PR-024 defines explicit, non-inheriting publication permissions for every authority level;
 - self-preference publication is restricted to the authenticated user and cannot target another user or unscoped organizational context;
-- publication tenant must equal the authenticated principal tenant.
+- publication tenant and publisher identity are server-derived from the authenticated principal;
+- PR-025 persists authenticated publisher provenance separately from semantic owner/source metadata;
+- API-authored context is server-labeled `source_type=api`, so callers cannot claim connector attestation;
+- publication writes require bounded idempotency keys and immutable supersession;
+- direct supersession cannot change authority level before approval workflow support;
+- publication attempts are payload-minimized and append-only audited.
 
 Deferred hardening:
 
-- authenticated write API applying this model;
-- persisted publisher provenance distinct from semantic owner metadata;
 - owner/approver workflow for policy and mandatory-control publication;
-- external source connector publication authorization.
+- external source connector publication authorization and attestation.
 
 ### T6 — Stale policy
 
@@ -178,7 +181,8 @@ Mitigations:
 - database trigger rejects ordinary UPDATE and DELETE operations;
 - exact-actor lookup scope;
 - payload-minimized audit schema;
-- resolution IDs correlate runtime outcomes to stored records.
+- resolution IDs correlate runtime outcomes to stored records;
+- publication audit records are also append-only, tenant-RLS scoped, and reject ordinary UPDATE/DELETE.
 
 Future hardening includes external WORM/SIEM sinks and cryptographic log chaining.
 
@@ -217,6 +221,23 @@ Mitigations:
 - repository/resource are documented as applicability selectors only;
 - sensitive underlying resource access must be enforced by policy or a downstream resource boundary;
 - integration tests verify helper domain pinning and repository-scope matching.
+
+### T15 — Publication replay, spoofing, or authority transition
+
+**Threat:** An authenticated publisher retries a write into duplicate immutable versions, injects tenant/publisher identity, spoofs connector provenance, reuses an idempotency key with different content, or attempts to downgrade/upgrade authority through supersession.
+
+**Mitigations:**
+- tenant and authenticated publisher provenance are server-derived;
+- external write schemas reject tenant/publisher/checksum fields;
+- each authority assignment uses PR-024 explicit permissions;
+- API source type is server-fixed;
+- Idempotency-Key is required and stored only as a hash alongside a canonical request hash;
+- same-key/different-request replay fails closed;
+- direct supersession preserves authority level;
+- context versions and publication audit history are immutable;
+- publication audit is tenant-RLS scoped.
+
+**Deferred:** PR-026 adds second-party approval state for policy/mandatory-control writes; PR-027 adds concurrent replay and approval-bypass adversarial cases.
 
 ### T14 — Mandatory-context illusion
 
