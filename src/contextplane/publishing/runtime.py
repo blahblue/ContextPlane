@@ -24,6 +24,7 @@ from contextplane.context_registry.repository import (
     supersede_context_item,
 )
 from contextplane.persistence.tenant import bind_session_tenant
+from contextplane.publishing.db import PublicationAuditRecord
 from contextplane.publishing.domain import (
     PublicationAction,
     PublicationAuthorization,
@@ -131,7 +132,7 @@ def _request_hash(
 
 def _response_from_audit(
     *,
-    audit_record,
+    audit_record: PublicationAuditRecord,
     context_record: ContextItemRecord,
 ) -> PublishContextResponse:
     if audit_record.permission_used is None:
