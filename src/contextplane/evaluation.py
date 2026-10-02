@@ -11,6 +11,7 @@ from uuid import uuid4
 
 from fastapi.testclient import TestClient
 from pydantic import BaseModel, ConfigDict
+from sqlalchemy import select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
@@ -33,6 +34,7 @@ from contextplane.context_registry import (
     SensitivityLevel,
     SourceType,
 )
+from contextplane.context_registry.db import ContextItemRecord
 from contextplane.context_registry.repository import (
     create_context_item,
     supersede_context_item,
@@ -289,28 +291,15 @@ def run_evaluation(engine: Engine) -> EvaluationReport:
 
     stale_key = "engineering.checkout.framework"
     with Session(engine) as session:
-        first = next(
-            record
-            for record in session.execute(
-                __import__("sqlalchemy").select(
-                    __import__(
-                        "contextplane.context_registry.db",
-                        fromlist=["ContextItemRecord"],
-                    ).ContextItemRecord
-                ).where(
-                    __import__(
-                        "contextplane.context_registry.db",
-                        fromlist=["ContextItemRecord"],
-                    ).ContextItemRecord.tenant_id
-                    == tenant_id,
-                    __import__(
-                        "contextplane.context_registry.db",
-                        fromlist=["ContextItemRecord"],
-                    ).ContextItemRecord.key
-                    == stale_key,
-                )
-            ).scalars()
+        first = session.scalar(
+            select(ContextItemRecord).where(
+                ContextItemRecord.tenant_id == tenant_id,
+                ContextItemRecord.key == stale_key,
+                ContextItemRecord.version == 1,
+            )
         )
+        if first is None:
+            raise RuntimeError("evaluation fixture record was not found")
         first_id = first.id
 
     with Session(engine) as session:
