@@ -1,5 +1,6 @@
 """Insert-only persistence operations for versioned context."""
 
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 from sqlalchemy import select
@@ -7,6 +8,9 @@ from sqlalchemy.orm import Session
 
 from contextplane.context_registry.db import ContextItemRecord
 from contextplane.context_registry.domain import ContextItemCreate
+
+if TYPE_CHECKING:
+    from contextplane.publishing.domain import PublicationAuthorization
 
 
 class ContextItemNotFoundError(LookupError):
@@ -56,9 +60,32 @@ def _record_kwargs(item: ContextItemCreate) -> dict[str, object]:
     }
 
 
-def create_context_item(session: Session, item: ContextItemCreate) -> ContextItemRecord:
+def _publisher_kwargs(
+    publication: "PublicationAuthorization | None",
+) -> dict[str, object]:
+    if publication is None:
+        return {}
+    return {
+        "publisher_subject": publication.subject,
+        "publisher_kind": publication.principal_kind.value,
+        "publisher_client_id": publication.client_id,
+        "publication_action": publication.action.value,
+        "publication_permission": publication.permission_used.value,
+    }
+
+
+def create_context_item(
+    session: Session,
+    item: ContextItemCreate,
+    *,
+    publication: "PublicationAuthorization | None" = None,
+) -> ContextItemRecord:
     """Insert the first immutable version of a logical context item."""
-    record = ContextItemRecord(**_record_kwargs(item), version=1)
+    record = ContextItemRecord(
+        **_record_kwargs(item),
+        **_publisher_kwargs(publication),
+        version=1,
+    )
     session.add(record)
     session.flush()
     return record
@@ -70,6 +97,7 @@ def supersede_context_item(
     tenant_id: str,
     previous_id: UUID,
     replacement: ContextItemCreate,
+    publication: "PublicationAuthorization | None" = None,
 ) -> ContextItemRecord:
     """Insert a new version while leaving the previous version untouched."""
     if replacement.scope.tenant_id != tenant_id:
@@ -99,6 +127,7 @@ def supersede_context_item(
 
     record = ContextItemRecord(
         **_record_kwargs(replacement),
+        **_publisher_kwargs(publication),
         logical_id=previous.logical_id,
         supersedes_id=previous.id,
         version=previous.version + 1,
