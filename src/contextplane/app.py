@@ -2,6 +2,7 @@
 
 from fastapi import FastAPI
 
+from contextplane.api.publishing import router as publishing_router
 from contextplane.api.runtime import router as context_router
 from contextplane.http_security import HttpPerimeterConfig, HttpPerimeterMiddleware
 from contextplane.models import HealthResponse
@@ -22,6 +23,7 @@ app.add_middleware(
     max_tracked_clients=_perimeter.max_tracked_clients,
 )
 app.include_router(context_router)
+app.include_router(publishing_router)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["system"])
