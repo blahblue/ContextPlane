@@ -150,6 +150,12 @@ class ContextItemRecord(Base):
     override_policy: Mapped[str] = mapped_column(String(64), nullable=False)
     checksum: Mapped[str] = mapped_column(String(64), nullable=False)
 
+    publisher_subject: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    publisher_kind: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    publisher_client_id: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    publication_action: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    publication_permission: Mapped[str | None] = mapped_column(String(128), nullable=True)
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
