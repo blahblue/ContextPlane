@@ -11,6 +11,7 @@ from contextplane.auth import Principal
 from contextplane.publishing import PublicationAction
 from contextplane.publishing.domain import PublishContextRequest, PublishContextResponse
 from contextplane.publishing.runtime import (
+    PublicationApprovalRequiredError,
     PublicationConflictError,
     PublicationDeniedError,
     PublicationNotFoundError,
@@ -54,6 +55,12 @@ def _publish(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="context item was not found",
+            headers=_publication_headers(exc.publication_id),
+        ) from None
+    except PublicationApprovalRequiredError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="high-authority publication requires approval workflow",
             headers=_publication_headers(exc.publication_id),
         ) from None
     except PublicationConflictError as exc:
