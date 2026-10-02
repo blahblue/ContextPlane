@@ -48,6 +48,38 @@ class PublicationPermission(StrEnum):
     MANDATORY_CONTROL = "context.publish.mandatory_control"
 
 
+class PublicationApprovalPermission(StrEnum):
+    """Explicit permissions for approving or activating high-authority context."""
+
+    APPROVE_POLICY = "context.approve.policy"
+    APPROVE_MANDATORY_CONTROL = "context.approve.mandatory_control"
+    ACTIVATE_POLICY = "context.activate.policy"
+    ACTIVATE_MANDATORY_CONTROL = "context.activate.mandatory_control"
+
+
+class PublicationProposalState(StrEnum):
+    """Derived lifecycle state for a high-authority proposal."""
+
+    DRAFT = "draft"
+    APPROVED = "approved"
+    ACTIVE = "active"
+
+
+class ApprovalEventType(StrEnum):
+    """Immutable workflow event types."""
+
+    APPROVE = "approve"
+    ACTIVATE = "activate"
+
+
+class ApprovalEventOutcome(StrEnum):
+    """Immutable workflow event outcomes."""
+
+    SUCCEEDED = "succeeded"
+    DENIED = "denied"
+    CONFLICT = "conflict"
+
+
 class PublicationAuthorization(BaseModel):
     """Auditable authorization result for a publish attempt."""
 
@@ -153,3 +185,46 @@ class PublishContextResponse(BaseModel):
     action: PublicationAction
     authority_level: AuthorityLevel
     permission_used: PublicationPermission
+
+
+
+class CreatePublicationProposalRequest(BaseModel):
+    """Create a high-authority draft without activating it."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    action: PublicationAction
+    previous_id: UUID | None = None
+    context: PublishContextRequest
+
+    @model_validator(mode="after")
+    def validate_action_shape(self) -> "CreatePublicationProposalRequest":
+        if self.action is PublicationAction.CREATE and self.previous_id is not None:
+            raise ValueError("create proposal cannot include previous_id")
+        if self.action is PublicationAction.SUPERSEDE and self.previous_id is None:
+            raise ValueError("supersede proposal requires previous_id")
+        if self.context.authority_level not in {
+            AuthorityLevel.POLICY,
+            AuthorityLevel.MANDATORY_CONTROL,
+        }:
+            raise ValueError(
+                "approval proposals are only for policy or mandatory_control"
+            )
+        return self
+
+
+class PublicationProposalResponse(BaseModel):
+    """Payload-minimized lifecycle response for a high-authority proposal."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    proposal_id: UUID
+    state: PublicationProposalState
+    action: PublicationAction
+    authority_level: AuthorityLevel
+    previous_id: UUID | None
+    approval_event_id: UUID | None = None
+    activation_event_id: UUID | None = None
+    context_record_id: UUID | None = None
+    logical_id: UUID | None = None
+    version: int | None = None

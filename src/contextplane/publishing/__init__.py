@@ -1,16 +1,31 @@
 """Authenticated context publishing authorization and runtime."""
 
+from contextplane.publishing.approval_runtime import (
+    ApprovalWorkflowConflictError,
+    ApprovalWorkflowDeniedError,
+    ApprovalWorkflowNotFoundError,
+    activate_publication_proposal,
+    approve_publication_proposal,
+    create_publication_proposal,
+)
 from contextplane.publishing.domain import (
+    ApprovalEventOutcome,
+    ApprovalEventType,
+    CreatePublicationProposalRequest,
     PublicationAction,
+    PublicationApprovalPermission,
     PublicationAuthorization,
     PublicationOutcome,
     PublicationPermission,
+    PublicationProposalResponse,
+    PublicationProposalState,
     PublicationScopeInput,
     PublicationSourceInput,
     PublishContextRequest,
     PublishContextResponse,
 )
 from contextplane.publishing.runtime import (
+    PublicationApprovalRequiredError,
     PublicationConflictError,
     PublicationDeniedError,
     PublicationNotFoundError,
@@ -18,11 +33,21 @@ from contextplane.publishing.runtime import (
 )
 from contextplane.publishing.service import (
     PublicationAuthorizationError,
+    authorize_activation,
+    authorize_approval,
     authorize_publication,
 )
 
 __all__ = [
+    "ApprovalEventOutcome",
+    "ApprovalEventType",
+    "ApprovalWorkflowConflictError",
+    "ApprovalWorkflowDeniedError",
+    "ApprovalWorkflowNotFoundError",
+    "CreatePublicationProposalRequest",
     "PublicationAction",
+    "PublicationApprovalPermission",
+    "PublicationApprovalRequiredError",
     "PublicationAuthorization",
     "PublicationAuthorizationError",
     "PublicationConflictError",
@@ -30,10 +55,17 @@ __all__ = [
     "PublicationNotFoundError",
     "PublicationOutcome",
     "PublicationPermission",
+    "PublicationProposalResponse",
+    "PublicationProposalState",
     "PublicationScopeInput",
     "PublicationSourceInput",
     "PublishContextRequest",
     "PublishContextResponse",
+    "activate_publication_proposal",
+    "approve_publication_proposal",
+    "authorize_activation",
+    "authorize_approval",
     "authorize_publication",
+    "create_publication_proposal",
     "publish_context",
 ]

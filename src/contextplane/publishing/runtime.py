@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
-import json
 from uuid import UUID
 
 from sqlalchemy import select
@@ -11,13 +9,7 @@ from sqlalchemy.orm import Session
 
 from contextplane.auth import Principal
 from contextplane.context_registry.db import ContextItemRecord
-from contextplane.context_registry.domain import (
-    AuthorityLevel,
-    ContextItemCreate,
-    ContextScope,
-    ContextSource,
-    SourceType,
-)
+from contextplane.context_registry.domain import AuthorityLevel
 from contextplane.context_registry.repository import (
     ContextIdentityMismatchError,
     ContextItemNotFoundError,
@@ -26,6 +18,11 @@ from contextplane.context_registry.repository import (
     supersede_context_item,
 )
 from contextplane.persistence.tenant import bind_session_tenant
+from contextplane.publishing.build import (
+    build_authenticated_context_item,
+    publication_request_hash,
+    sha256_text,
+)
 from contextplane.publishing.db import PublicationAuditRecord
 from contextplane.publishing.domain import (
     PublicationAction,
@@ -71,68 +68,8 @@ class PublicationNotFoundError(PublicationRuntimeError):
     """Supersession target is not visible in the authenticated tenant."""
 
 
-def _sha256(value: str) -> str:
-    return hashlib.sha256(value.encode("utf-8")).hexdigest()
-
-
-def _canonical_json(value: object) -> str:
-    return json.dumps(
-        value,
-        sort_keys=True,
-        separators=(",", ":"),
-        ensure_ascii=False,
-        default=str,
-    )
-
-
-def _build_item(
-    *,
-    principal: Principal,
-    request: PublishContextRequest,
-) -> ContextItemCreate:
-    scope = ContextScope(
-        tenant_id=principal.tenant_id,
-        **request.scope.model_dump(),
-    )
-    provisional = ContextItemCreate(
-        key=request.key,
-        value=request.value,
-        payload_ref=request.payload_ref,
-        domain=request.domain,
-        scope=scope,
-        owner=request.owner,
-        source=ContextSource(
-            type=SourceType.API,
-            identifier=request.source.identifier,
-            uri=request.source.uri,
-        ),
-        authority_level=request.authority_level,
-        effective_from=request.effective_from,
-        effective_to=request.effective_to,
-        sensitivity=request.sensitivity,
-        override_policy=request.override_policy,
-        checksum="0" * 64,
-    )
-    semantic = provisional.model_dump(mode="json", exclude={"checksum"})
-    checksum = _sha256(_canonical_json(semantic))
-    return provisional.model_copy(update={"checksum": checksum})
-
-
-def _request_hash(
-    *,
-    action: PublicationAction,
-    previous_id: UUID | None,
-    item: ContextItemCreate,
-) -> str:
-    return _sha256(
-        _canonical_json(
-            {
-                "action": action.value,
-                "previous_id": str(previous_id) if previous_id is not None else None,
-                "item": item.model_dump(mode="json"),
-            }
-        )
-    )
+class PublicationApprovalRequiredError(PublicationConflictError):
+    """High-authority context must use the approval workflow."""
 
 
 def _response_from_audit(
@@ -183,11 +120,12 @@ def _replay_existing(
             error_code=existing.error_code,
         )
     if existing.outcome == PublicationOutcome.CONFLICT.value:
-        error_cls = (
-            PublicationNotFoundError
-            if existing.error_code == "previous_not_found"
-            else PublicationConflictError
-        )
+        if existing.error_code == "previous_not_found":
+            error_cls = PublicationNotFoundError
+        elif existing.error_code == "approval_required":
+            error_cls = PublicationApprovalRequiredError
+        else:
+            error_cls = PublicationConflictError
         raise error_cls(
             "publication could not be applied",
             publication_id=existing.publication_id,
@@ -231,14 +169,14 @@ def publish_context(
     if action is PublicationAction.SUPERSEDE and previous_id is None:
         raise ValueError("supersede publication requires previous_id")
 
-    item = _build_item(principal=principal, request=request)
-    request_hash = _request_hash(
+    item = build_authenticated_context_item(principal=principal, request=request)
+    request_hash = publication_request_hash(
         action=action,
         previous_id=previous_id,
         item=item,
     )
-    idempotency_key_hash = _sha256(idempotency_key)
-    key_hash = _sha256(item.key)
+    idempotency_key_hash = sha256_text(idempotency_key)
+    key_hash = sha256_text(item.key)
 
     replay = _replay_existing(
         session,
@@ -268,12 +206,38 @@ def publish_context(
             previous_record_id=previous_id,
             error_code="not_authorized",
         )
+        publication_id = audit.publication_id
         session.commit()
         raise PublicationDeniedError(
             "publication is not authorized",
-            publication_id=audit.publication_id,
+            publication_id=publication_id,
             error_code="not_authorized",
         ) from None
+
+    if item.authority_level in {
+        AuthorityLevel.POLICY,
+        AuthorityLevel.MANDATORY_CONTROL,
+    }:
+        audit = create_publication_audit(
+            session,
+            principal=principal,
+            action=action,
+            authority_level=item.authority_level.value,
+            idempotency_key_hash=idempotency_key_hash,
+            request_hash=request_hash,
+            key_hash=key_hash,
+            outcome=PublicationOutcome.CONFLICT,
+            authorization=authorization,
+            previous_record_id=previous_id,
+            error_code="approval_required",
+        )
+        publication_id = audit.publication_id
+        session.commit()
+        raise PublicationApprovalRequiredError(
+            "high-authority publication requires approval workflow",
+            publication_id=publication_id,
+            error_code="approval_required",
+        )
 
     if action is PublicationAction.SUPERSEDE:
         assert previous_id is not None
@@ -297,10 +261,11 @@ def publish_context(
                 previous_record_id=previous_id,
                 error_code="previous_not_found",
             )
+            publication_id = audit.publication_id
             session.commit()
             raise PublicationNotFoundError(
                 "context item was not found",
-                publication_id=audit.publication_id,
+                publication_id=publication_id,
                 error_code="previous_not_found",
             )
 
@@ -318,10 +283,11 @@ def publish_context(
                 previous_record_id=previous_id,
                 error_code="authority_transition_requires_approval",
             )
+            publication_id = audit.publication_id
             session.commit()
             raise PublicationConflictError(
                 "supersession cannot change authority level",
-                publication_id=audit.publication_id,
+                publication_id=publication_id,
                 error_code="authority_transition_requires_approval",
             )
 
@@ -357,10 +323,11 @@ def publish_context(
             previous_record_id=previous_id,
             error_code="previous_not_found",
         )
+        publication_id = audit.publication_id
         session.commit()
         raise PublicationNotFoundError(
             "context item was not found",
-            publication_id=audit.publication_id,
+            publication_id=publication_id,
             error_code="previous_not_found",
         ) from None
     except (ContextVersionConflictError, ContextIdentityMismatchError):
@@ -379,10 +346,11 @@ def publish_context(
             previous_record_id=previous_id,
             error_code="version_conflict",
         )
+        publication_id = audit.publication_id
         session.commit()
         raise PublicationConflictError(
             "context publication conflicts with immutable version state",
-            publication_id=audit.publication_id,
+            publication_id=publication_id,
             error_code="version_conflict",
         ) from None
 
@@ -402,6 +370,7 @@ def publish_context(
         version=record.version,
     )
     session.commit()
+    bind_session_tenant(session, principal.tenant_id)
 
     return _response_from_audit(
         audit_record=audit,
