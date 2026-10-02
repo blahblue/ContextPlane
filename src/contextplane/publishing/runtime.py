@@ -15,6 +15,7 @@ from contextplane.context_registry.domain import (
     ContextItemCreate,
     ContextScope,
     ContextSource,
+    SourceType,
 )
 from contextplane.context_registry.repository import (
     ContextIdentityMismatchError,
@@ -100,7 +101,11 @@ def _build_item(
         domain=request.domain,
         scope=scope,
         owner=request.owner,
-        source=ContextSource(**request.source.model_dump()),
+        source=ContextSource(
+            type=SourceType.API,
+            identifier=request.source.identifier,
+            uri=request.source.uri,
+        ),
         authority_level=request.authority_level,
         effective_from=request.effective_from,
         effective_to=request.effective_to,
@@ -217,6 +222,9 @@ def publish_context(
 ) -> PublishContextResponse:
     """Authorize, persist, audit, and idempotently replay one publication."""
     bind_session_tenant(session, principal.tenant_id)
+
+    if not idempotency_key.strip() or len(idempotency_key) > 256:
+        raise ValueError("idempotency_key must be 1..256 non-whitespace characters")
 
     if action is PublicationAction.CREATE and previous_id is not None:
         raise ValueError("create publication cannot specify previous_id")
