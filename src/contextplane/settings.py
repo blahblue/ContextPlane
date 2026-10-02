@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     resolution_cache_ttl_seconds: int = Field(default=60, ge=0, le=3600)
     resolution_cache_max_entries: int = Field(default=1024, ge=1, le=100_000)
 
+    publishing_require_distinct_approver: bool = True
+
     @field_validator("database_url")
     @classmethod
     def validate_database_url(cls, value: str) -> str:
