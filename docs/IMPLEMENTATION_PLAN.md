@@ -114,13 +114,19 @@ PR-016 verification confirms engineering, brand/presentation, and security-polic
 
 ## Phase 7 — Copilot Studio demo
 
+**Status: verified in PR-018.**
+
 Deliver:
 
-- reproducible integration guide;
-- sample presentation/proposal scenario;
-- documented orchestration-vs-enforcement boundary.
+- reproducible integration guide; **verified against current Microsoft Copilot Studio MCP documentation**
+- sample presentation/proposal scenario; **included in examples/copilot-studio**
+- identity-aware brand/presentation context; **verified across marketing-user vs engineering-user principals**
+- documented orchestration-vs-enforcement boundary; **explicitly documented in the demo guide**
+- selective MCP tool guidance and Power Platform data-policy notes; **documented for the current Copilot Studio integration path**
 
 Exit gate: changing an authoritative rule changes output without editing embedded client prompts.
+
+Verification: the exact demo corpus is exercised through the real MCP helper/shared runtime. CI verifies cross-user isolation, cross-tenant isolation, shared brand/presentation context, and cache invalidation after authoritative context supersession. Live Copilot Studio OAuth/tenant integration remains an operator-run external step because CI does not control a Microsoft tenant.
 
 ## Phase 8 — Coding-agent demo
 
