@@ -76,6 +76,18 @@ class ContextItemRecord(Base):
             name="ck_context_items_no_self_supersession",
         ),
         CheckConstraint(
+            "("
+            "publisher_subject IS NULL AND publisher_kind IS NULL "
+            "AND publication_action IS NULL AND publication_permission IS NULL"
+            ") OR ("
+            "publisher_subject IS NOT NULL "
+            "AND publisher_kind IN ('user','agent','service') "
+            "AND publication_action IN ('create','supersede') "
+            "AND publication_permission IS NOT NULL"
+            ")",
+            name="ck_context_items_publication_provenance_shape",
+        ),
+        CheckConstraint(
             "(version = 1 AND supersedes_id IS NULL) OR "
             "(version > 1 AND supersedes_id IS NOT NULL)",
             name="ck_context_items_version_lineage_shape",
