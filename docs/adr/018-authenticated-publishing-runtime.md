@@ -35,6 +35,8 @@ Tenant and publisher identity come only from the normalized authenticated Princi
 
 The server derives a canonical SHA-256 checksum after injecting the authenticated tenant.
 
+Because this path is itself the authenticated API authoring path, the persisted source type is server-fixed to `api`. A caller may provide a descriptive source identifier/URI, but cannot claim that an API write was independently attested by a Git, SharePoint, Drive, Databricks, or Fabric connector.
+
 Every request requires an `Idempotency-Key`. The service stores only its SHA-256 hash together with a canonical request hash. Repeating the same actor/key/request replays the original result; reusing the same actor/key for different content fails closed.
 
 Successful authenticated context versions persist publisher provenance separately from semantic `owner` and `source` metadata:
@@ -64,7 +66,7 @@ Preserving authority across direct supersession closes the obvious downgrade/esc
 - user/agent/client identity is never accepted from the write request body;
 - publication permission is re-evaluated on each new idempotency key;
 - a previously denied request replayed with the same idempotency key remains denied; clients must use a new key after authorization state changes;
-- semantic owner/source metadata remains descriptive and must not be treated as publisher identity or an authorization grant;
-- source connector attestation remains future work;
+- semantic owner/source-reference metadata remains descriptive and must not be treated as publisher identity or an authorization grant;
+- API-authored rows are persisted with `source_type=api`; connector source attestation remains future work;
 - high-authority policy/mandatory-control writes are permission-gated but do not yet have second-party approval until PR-026;
 - PR-027 will extend adversarial coverage for replay, concurrent supersession, forged metadata, and approval bypass.
