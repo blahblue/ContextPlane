@@ -15,8 +15,14 @@ class PublicationAuditRecord(Base):
 
     __tablename__ = "publication_audit"
     __table_args__ = (
-        CheckConstraint("length(btrim(tenant_id)) > 0", name="ck_publication_audit_tenant"),
-        CheckConstraint("length(btrim(principal_subject)) > 0", name="ck_publication_audit_subject"),
+        CheckConstraint(
+            "length(btrim(tenant_id)) > 0",
+            name="ck_publication_audit_tenant",
+        ),
+        CheckConstraint(
+            "length(btrim(principal_subject)) > 0",
+            name="ck_publication_audit_subject",
+        ),
         CheckConstraint(
             "principal_kind IN ('user','agent','service')",
             name="ck_publication_audit_principal_kind",
@@ -26,7 +32,9 @@ class PublicationAuditRecord(Base):
             name="ck_publication_audit_action",
         ),
         CheckConstraint(
-            "authority_level IN ('preference','recommendation','standard','policy','mandatory_control')",
+            "authority_level IN "
+            "('preference','recommendation','standard','policy',"
+            "'mandatory_control')",
             name="ck_publication_audit_authority",
         ),
         CheckConstraint(
