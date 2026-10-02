@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from uuid import UUID
 
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from contextplane.auth import Principal, PrincipalKind
+from contextplane.context_registry.db import ContextItemRecord
 from contextplane.context_registry.domain import AuthorityLevel, ContextItemCreate
 from contextplane.context_registry.repository import (
     ContextIdentityMismatchError,
@@ -240,9 +242,6 @@ def create_publication_proposal(
 
     if request.action is PublicationAction.SUPERSEDE:
         assert request.previous_id is not None
-        from contextplane.context_registry.db import ContextItemRecord
-        from sqlalchemy import select
-
         previous = session.scalar(
             select(ContextItemRecord).where(
                 ContextItemRecord.tenant_id == principal.tenant_id,
@@ -298,6 +297,7 @@ def create_publication_proposal(
     session.add(proposal)
     try:
         session.commit()
+        bind_session_tenant(session, principal.tenant_id)
     except IntegrityError:
         session.rollback()
         bind_session_tenant(session, principal.tenant_id)
@@ -380,6 +380,7 @@ def approve_publication_proposal(
             permission_used=permission,
         )
         session.commit()
+        bind_session_tenant(session, principal.tenant_id)
 
     return _proposal_response(session, proposal=proposal)
 
@@ -531,5 +532,6 @@ def activate_publication_proposal(
         version=record.version,
     )
     session.commit()
+    bind_session_tenant(session, principal.tenant_id)
 
     return _proposal_response(session, proposal=proposal)
