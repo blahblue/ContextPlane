@@ -28,3 +28,5 @@ New ADRs should use a short sequential number and include:
 - decision;
 - rationale;
 - consequences.
+
+- [ADR-016 — Use PostgreSQL RLS as tenant defense in depth](016-postgres-tenant-rls.md)

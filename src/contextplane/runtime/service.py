@@ -20,6 +20,7 @@ from contextplane.cache import (
 from contextplane.context_registry.db import ContextItemRecord
 from contextplane.context_registry.domain import ContextScope, SourceType
 from contextplane.context_registry.state import get_context_state_snapshot
+from contextplane.persistence.tenant import bind_session_tenant
 from contextplane.policy import (
     PolicyDecisionKind,
     PolicyEvaluationRequest,
@@ -163,6 +164,11 @@ def resolve_context_runtime(
     evaluated_at = as_of or datetime.now(UTC)
     correlation_id = resolution_id or uuid4()
     selector_dimensions = _selector_dimensions(request)
+
+    # Defense in depth: bind the authenticated tenant to this transaction before
+    # any tenant-bearing read or audit write. PostgreSQL RLS policies use this
+    # transaction-local setting for non-owner runtime roles.
+    bind_session_tenant(session, principal.tenant_id)
 
     if not principal_has_permission(principal, "context.resolve"):
         create_resolution_audit(

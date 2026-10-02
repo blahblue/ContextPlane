@@ -17,16 +17,16 @@ The review did identify several concrete hardening gaps that should be fixed bef
 
 | ID | Severity | Finding | Current protection | Action |
 |---|---|---|---|---|
-| S01 | High | No dependency-vulnerability scan in CI; first scan found PYSEC-2026-1845 in pytest 8.4.2 | typed/tests only | PR-021: scanner added and pytest raised to >=9.0.3 |
-| S02 | High | No automated repository/history secret scan | `.gitignore`, env configuration | PR-021 |
-| S03 | Medium | GitHub Actions use mutable major-version tags | least-privilege workflow permissions | PR-021 |
-| S04 | Medium | No automated dependency-update configuration | version ranges in pyproject | PR-021 |
-| S05 | High | No application/edge rate-limit guarantee for token validation and resolve/audit routes | authenticated API only | PR-022 |
-| S06 | Medium | No explicit security-header/non-cacheable-response middleware | bearer auth + safe response models | PR-022 |
-| S07 | Medium | Request key collections are not explicitly count-bounded | each string is length-bounded | PR-022 |
-| S08 | Medium | FastAPI docs/OpenAPI are exposed by default | schema contains no credentials | PR-022 |
-| S09 | High defense-in-depth | PostgreSQL tenant tables rely on application query scoping rather than RLS | extensive tenant filters, same-tenant FK constraints, adversarial tests | PR-023 |
-| S10 | Medium | Production database TLS is not enforced by configuration | DB is not host-exposed in Compose | PR-023 |
+| S01 | High | No dependency-vulnerability scan in CI; first scan found PYSEC-2026-1845 in pytest 8.4.2 | pip-audit now blocks CI; pytest upgraded past affected versions | PR-021 remediated |
+| S02 | High | No automated repository/history secret scan | full-history Gitleaks now blocks CI | PR-021 remediated |
+| S03 | Medium | GitHub Actions used mutable major-version tags | workflow actions pinned to immutable SHAs | PR-021 remediated |
+| S04 | Medium | No automated dependency-update configuration | Dependabot now covers pip and GitHub Actions | PR-021 remediated |
+| S05 | High | No application/edge rate-limit guarantee for token validation and resolve/audit routes | bounded pre-auth process limiter added; distributed ingress control remains deployment follow-up | PR-022 partially remediated |
+| S06 | Medium | No explicit security-header/non-cacheable-response middleware | security headers + no-store/private policy added | PR-022 remediated |
+| S07 | Medium | Request key collections were not count-bounded | keys capped at 100; domains capped to supported set | PR-022 remediated |
+| S08 | Medium | FastAPI docs/OpenAPI were exposed by default | docs/schema disabled by default with explicit opt-in | PR-022 remediated |
+| S09 | High defense-in-depth | PostgreSQL tenant tables relied on application query scoping rather than RLS | explicit tenant filters remain; PR-023 adds RLS for non-owner runtime roles + direct DB isolation tests | PR-023 remediated |
+| S10 | Medium | Production database TLS was not enforceable by configuration | PR-023 adds DATABASE_REQUIRE_TLS and sslmode validation | PR-023 remediated |
 | S11 | Medium | Production backup/restore and external audit retention are documented as expectations, not executable runbooks | immutable in-DB audit trigger | follow-up ops runbook |
 | S12 | Medium | Production Entra uses a pinned public key with remote JWKS rotation deferred | strict issuer/audience/signature/time validation | follow-up identity hardening |
 | S13 | Medium supply-chain | No deployable dependency lock/hashes | bounded dependency version ranges | follow-up reproducible-build PR |

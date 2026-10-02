@@ -1,7 +1,8 @@
 """Application configuration."""
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy.engine import make_url
 
 
 class Settings(BaseSettings):
@@ -14,6 +15,7 @@ class Settings(BaseSettings):
     )
 
     database_url: str = ""
+    database_require_tls: bool = False
 
     entra_tenant_id: str | None = None
     entra_issuer: str | None = None
@@ -31,3 +33,17 @@ class Settings(BaseSettings):
         if not value.startswith("postgresql+psycopg://"):
             raise ValueError("database_url must use postgresql+psycopg://")
         return value
+
+    @model_validator(mode="after")
+    def validate_database_tls(self) -> "Settings":
+        """Require an explicit protective sslmode when production TLS is enabled."""
+        if not self.database_require_tls:
+            return self
+
+        query = make_url(self.database_url).query
+        sslmode = query.get("sslmode")
+        if sslmode not in {"require", "verify-ca", "verify-full"}:
+            raise ValueError(
+                "database_require_tls requires sslmode=require, verify-ca, or verify-full"
+            )
+        return self

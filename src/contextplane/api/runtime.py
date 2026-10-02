@@ -27,6 +27,7 @@ from contextplane.audit.db import ResolutionAuditRecord
 from contextplane.auth import Principal, PrincipalKind
 from contextplane.cache import InMemoryResolutionCache
 from contextplane.context_registry.domain import ContextDomain
+from contextplane.persistence.tenant import bind_session_tenant
 from contextplane.policy import PolicyRule
 from contextplane.runtime import (
     RuntimeAuthorizationError,
@@ -121,6 +122,7 @@ def get_resolution(
     session: Annotated[Session, Depends(get_database_session)],
 ) -> ResolutionAuditResponse:
     """Return one caller-owned audit record without raw context or token material."""
+    bind_session_tenant(session, principal.tenant_id)
     record = get_resolution_audit_for_principal(
         session,
         principal=principal,
