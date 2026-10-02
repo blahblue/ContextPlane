@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
-import json
 from uuid import UUID
 
 from sqlalchemy import select
@@ -11,13 +9,7 @@ from sqlalchemy.orm import Session
 
 from contextplane.auth import Principal
 from contextplane.context_registry.db import ContextItemRecord
-from contextplane.context_registry.domain import (
-    AuthorityLevel,
-    ContextItemCreate,
-    ContextScope,
-    ContextSource,
-    SourceType,
-)
+from contextplane.context_registry.domain import AuthorityLevel
 from contextplane.context_registry.repository import (
     ContextIdentityMismatchError,
     ContextItemNotFoundError,
@@ -26,6 +18,11 @@ from contextplane.context_registry.repository import (
     supersede_context_item,
 )
 from contextplane.persistence.tenant import bind_session_tenant
+from contextplane.publishing.build import (
+    build_authenticated_context_item,
+    publication_request_hash,
+    sha256_text,
+)
 from contextplane.publishing.db import PublicationAuditRecord
 from contextplane.publishing.domain import (
     PublicationAction,
@@ -69,70 +66,6 @@ class PublicationConflictError(PublicationRuntimeError):
 
 class PublicationNotFoundError(PublicationRuntimeError):
     """Supersession target is not visible in the authenticated tenant."""
-
-
-def _sha256(value: str) -> str:
-    return hashlib.sha256(value.encode("utf-8")).hexdigest()
-
-
-def _canonical_json(value: object) -> str:
-    return json.dumps(
-        value,
-        sort_keys=True,
-        separators=(",", ":"),
-        ensure_ascii=False,
-        default=str,
-    )
-
-
-def _build_item(
-    *,
-    principal: Principal,
-    request: PublishContextRequest,
-) -> ContextItemCreate:
-    scope = ContextScope(
-        tenant_id=principal.tenant_id,
-        **request.scope.model_dump(),
-    )
-    provisional = ContextItemCreate(
-        key=request.key,
-        value=request.value,
-        payload_ref=request.payload_ref,
-        domain=request.domain,
-        scope=scope,
-        owner=request.owner,
-        source=ContextSource(
-            type=SourceType.API,
-            identifier=request.source.identifier,
-            uri=request.source.uri,
-        ),
-        authority_level=request.authority_level,
-        effective_from=request.effective_from,
-        effective_to=request.effective_to,
-        sensitivity=request.sensitivity,
-        override_policy=request.override_policy,
-        checksum="0" * 64,
-    )
-    semantic = provisional.model_dump(mode="json", exclude={"checksum"})
-    checksum = _sha256(_canonical_json(semantic))
-    return provisional.model_copy(update={"checksum": checksum})
-
-
-def _request_hash(
-    *,
-    action: PublicationAction,
-    previous_id: UUID | None,
-    item: ContextItemCreate,
-) -> str:
-    return _sha256(
-        _canonical_json(
-            {
-                "action": action.value,
-                "previous_id": str(previous_id) if previous_id is not None else None,
-                "item": item.model_dump(mode="json"),
-            }
-        )
-    )
 
 
 def _response_from_audit(
@@ -231,14 +164,14 @@ def publish_context(
     if action is PublicationAction.SUPERSEDE and previous_id is None:
         raise ValueError("supersede publication requires previous_id")
 
-    item = _build_item(principal=principal, request=request)
-    request_hash = _request_hash(
+    item = build_authenticated_context_item(principal=principal, request=request)
+    request_hash = publication_request_hash(
         action=action,
         previous_id=previous_id,
         item=item,
     )
-    idempotency_key_hash = _sha256(idempotency_key)
-    key_hash = _sha256(item.key)
+    idempotency_key_hash = sha256_text(idempotency_key)
+    key_hash = sha256_text(item.key)
 
     replay = _replay_existing(
         session,
