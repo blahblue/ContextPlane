@@ -34,6 +34,33 @@ class PublicationAuditRecord(Base):
             name="ck_publication_audit_outcome",
         ),
         CheckConstraint(
+            "permission_used IS NULL OR permission_used IN ("
+            "'context.publish.preference.self',"
+            "'context.publish.preference',"
+            "'context.publish.recommendation',"
+            "'context.publish.standard',"
+            "'context.publish.policy',"
+            "'context.publish.mandatory_control'"
+            ")",
+            name="ck_publication_audit_permission",
+        ),
+        CheckConstraint(
+            "("
+            "outcome = 'succeeded' AND permission_used IS NOT NULL "
+            "AND context_record_id IS NOT NULL AND logical_id IS NOT NULL "
+            "AND version IS NOT NULL AND version > 0 AND error_code IS NULL"
+            ") OR ("
+            "outcome = 'denied' AND permission_used IS NULL "
+            "AND context_record_id IS NULL AND logical_id IS NULL "
+            "AND version IS NULL AND error_code IS NOT NULL"
+            ") OR ("
+            "outcome = 'conflict' AND permission_used IS NOT NULL "
+            "AND context_record_id IS NULL AND logical_id IS NULL "
+            "AND version IS NULL AND error_code IS NOT NULL"
+            ")",
+            name="ck_publication_audit_outcome_shape",
+        ),
+        CheckConstraint(
             "idempotency_key_hash ~ '^[0-9a-f]{64}$'",
             name="ck_publication_audit_idempotency_hash",
         ),
