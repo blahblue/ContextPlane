@@ -145,15 +145,21 @@ Verification: the exact demo YAML fixture is loaded through the production seed 
 
 ## Phase 9 — Governance + audit
 
-Deliver:
+**MVP status: partially verified; authenticated publishing workflow deferred post-MVP.**
 
-- owner metadata;
-- publication state;
+Delivered:
+
+- owner/provenance metadata;
 - effective dates;
-- decision explanation;
-- audit query API.
+- deterministic decision explanation;
+- immutable resolution audit;
+- actor-scoped audit query API.
 
-Exit gate: every result is attributable to source, owner, version, and policy path.
+Deferred:
+
+- authenticated publication state/workflow controlling who may assign high-authority context.
+
+Exit gate for runtime attribution is met: every returned result is attributable to source, owner, version, and policy path. Publication governance remains an explicit post-MVP trust-boundary hardening item.
 
 ## Phase 9.5 — Adversarial hardening
 
@@ -177,16 +183,20 @@ Exit gate: the adversarial matrix is reproducible in CI and all covered security
 
 ## Phase 10 — Evaluation
 
+**Status: verified in PR-020.**
+
 Deliver:
 
-- golden scenarios;
-- latency benchmark;
-- over-retrieval metric;
-- policy-violation tests;
-- stale-context tests;
-- client consistency tests.
+- golden scenarios; **4/4 exact-match scenarios passed**
+- latency benchmark; **40 warm iterations, p50 2.084 ms / p95 3.775 ms in GitHub Actions run 36990742946**
+- over-retrieval metric; **0 unexpected items / 0.0%**
+- policy-violation tests; **0 violations**
+- stale-context tests; **pass after authoritative supersession with warm cache**
+- client consistency tests; **REST/MCP semantic consistency pass**
 
-Exit gate: reproducible benchmark report checked into the repository.
+Exit gate: met. The reproducible benchmark harness runs in CI and the baseline is checked into [EVALUATION_REPORT.md](EVALUATION_REPORT.md).
+
+The latency number is a reference CI regression signal, not a production SLO or load-test result.
 
 ## Recommended sequencing
 

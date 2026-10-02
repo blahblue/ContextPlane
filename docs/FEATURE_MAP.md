@@ -14,7 +14,7 @@ Status values: **planned**, **partial**, **implemented**, **verified**, **deferr
 | Persistence | Database readiness integration | Yes | verified | real PostgreSQL integration test |
 | Registry | Context item schema | Yes | verified | Pydantic + PostgreSQL constraints |
 | Registry | Scope schema | Yes | verified | strict validation + tenant DB constraint |
-| Registry | Context item CRUD | Yes | planned | API + DB integration |
+| Registry | Authenticated context authoring API | No | deferred | post-MVP publishing workflow; seed + insert-only repository cover MVP authoring |
 | Registry | Immutable versioning | Yes | verified | insert-only history + PostgreSQL lineage constraints |
 | Registry | Provenance schema | Yes | verified | typed source fields + DB constraints |
 | Graph | Typed relationships | Yes | verified | tenant-scoped logical edges + PostgreSQL FK/adversarial tests |
@@ -30,9 +30,10 @@ Status values: **planned**, **partial**, **implemented**, **verified**, **deferr
 | Runtime | Resolution cache | Yes | verified | principal/revision/policy keying + DB trigger + temporal-expiry tests |
 | Runtime | MCP server | Yes | verified | shared-runtime + tool schema + Entra verifier + MCP integration tests |
 | Runtime | MCP domain helpers | Yes | verified | fixed-domain helper schemas + policy/domain/repository integration tests |
-| Runtime | Python SDK | Yes | planned | SDK integration |
+| Runtime | Python SDK | No | deferred | REST + MCP are the MVP client surfaces |
 | Audit | Resolution log | Yes | verified | append-only DB trigger + success/deny/conflict + actor-scoped lookup tests |
 | Security | Adversarial regression suite | Yes | verified | 25-scenario threat matrix + cross-component runtime/policy/cache tests |
+| Evaluation | Reproducible MVP benchmark | Yes | verified | CI run 36990742946: 4/4 golden, 0 policy violations, 0% over-retrieval, REST/MCP consistent |
 | Client | Coding-agent demo | Yes | verified | exact seed fixture + repository-specific MCP helper integration + Cursor config validation |
 | Client | Copilot Studio demo | Yes | verified | identity-aware MCP helper demo + cross-user/tenant isolation + authoritative-update tests |
 | Sources | YAML seed | Yes | verified | canonical checksum + idempotency + immutable supersession |

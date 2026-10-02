@@ -14,6 +14,7 @@ This directory contains the public technical design for ContextPlane.
 - [Seed file format](SEED_FORMAT.md)
 - [Verification loop](VERIFICATION.md)
 - [Adversarial security regression matrix](ADVERSARIAL_TEST_MATRIX.md)
+- [MVP evaluation report](EVALUATION_REPORT.md)
 - [MCP server](MCP.md)
 - [Architecture decision records](adr/)
 

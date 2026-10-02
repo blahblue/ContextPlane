@@ -236,6 +236,8 @@ Acceptance:
 
 ### PR-020 — Evaluation report
 
+**Status:** verified
+
 Dependencies: PR-019
 
 Acceptance:

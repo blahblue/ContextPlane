@@ -82,9 +82,9 @@ The MVP will keep graph relationships in PostgreSQL rather than introduce a dedi
 - [Implementation plan](docs/IMPLEMENTATION_PLAN.md)
 - [Feature map](docs/FEATURE_MAP.md)
 - [Verification loop](docs/VERIFICATION.md)
+- [MVP evaluation report](docs/EVALUATION_REPORT.md)
 - [Architecture decisions](docs/adr/)
 - [Coding-agent demo](examples/coding-agent/README.md)
-- [Copilot Studio demo](examples/copilot-studio/README.md)
 - [Copilot Studio demo](examples/copilot-studio/README.md)
 
 ## First milestone

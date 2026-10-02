@@ -53,3 +53,6 @@ jobs:
 
       - name: Test
         run: pytest --cov=contextplane --cov-report=term-missing
+
+      - name: Run MVP evaluation
+        run: python -m contextplane.evaluation
