@@ -61,6 +61,8 @@ def test_rls_policies_exist_for_all_tenant_runtime_tables(engine) -> None:
         "context_state_revisions",
         "resolution_audit",
         "publication_audit",
+        "publication_proposals",
+        "publication_approval_events",
     }
 
     with engine.connect() as connection:
