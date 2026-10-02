@@ -169,3 +169,30 @@ Imported text does not become policy merely because it contains imperative langu
 Store references to secrets, not secret values. Use enterprise secret-management infrastructure for credentials.
 
 See [../THREAT_MODEL.md](../THREAT_MODEL.md) for adversarial cases.
+
+
+## HTTP perimeter
+
+The reference FastAPI service adds a bounded process-local fixed-window limiter to `/v1/*` routes before authentication dependencies run. The limiter keys on the direct network peer rather than trusting `X-Forwarded-For` supplied by an arbitrary client.
+
+This is a reference safeguard, not a distributed production abuse-control system. Multi-instance deployments must also enforce rate limits at a trusted ingress/API gateway, with proxy trust configured explicitly.
+
+The REST perimeter also:
+
+- disables Swagger/ReDoc/OpenAPI endpoints by default;
+- marks `/v1/*` responses `Cache-Control: no-store, private`;
+- emits `X-Content-Type-Options: nosniff`;
+- denies framing;
+- uses a no-referrer policy;
+- disables camera/microphone/geolocation through Permissions Policy;
+- applies a restrictive API Content Security Policy;
+- emits HSTS when the request is actually observed as HTTPS.
+
+Set `CONTEXTPLANE_EXPOSE_API_DOCS=true` only for a deliberately exposed development/documentation deployment.
+
+The default local limiter is 120 requests/minute per direct peer and is configurable with:
+
+- `CONTEXTPLANE_HTTP_RATE_LIMIT_PER_MINUTE`;
+- `CONTEXTPLANE_HTTP_RATE_LIMIT_MAX_CLIENTS`.
+
+Production TLS must still be terminated/enforced at a trusted ingress or at the application server. Do not trust arbitrary forwarded-protocol/client-IP headers merely to make HTTPS or rate-limit checks pass.
