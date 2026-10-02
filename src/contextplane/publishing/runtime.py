@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from contextplane.auth import Principal
 from contextplane.context_registry.db import ContextItemRecord
 from contextplane.context_registry.domain import (
+    AuthorityLevel,
     ContextItemCreate,
     ContextScope,
     ContextSource,
@@ -148,7 +149,7 @@ def _response_from_audit(
         version=context_record.version,
         checksum=context_record.checksum,
         action=PublicationAction(audit_record.action),
-        authority_level=context_record.authority_level,
+        authority_level=AuthorityLevel(context_record.authority_level),
         permission_used=PublicationPermission(audit_record.permission_used),
     )
 
