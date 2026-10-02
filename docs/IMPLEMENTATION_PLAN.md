@@ -155,6 +155,26 @@ Deliver:
 
 Exit gate: every result is attributable to source, owner, version, and policy path.
 
+## Phase 9.5 — Adversarial hardening
+
+**Status: verified in PR-019.**
+
+Deliver:
+
+- cross-tenant and cross-user escalation tests;
+- foreign-tenant policy injection tests;
+- prompt/source-injection-as-data tests;
+- context-poisoning and mandatory-control precedence tests;
+- stale context/cache invalidation tests;
+- cache identity/policy/version confusion tests;
+- reusable threat-to-test regression matrix.
+
+Verification: PR-019 exercises 25 mapped attack scenarios across new and existing suites. The sweep found one concrete runtime gap: authenticated principals lacking `context.resolve` were rejected but not durably audited. The runtime now writes a payload-minimized denied audit record before raising the authorization error.
+
+Stranger-diff review also corrected two threat-model overclaims: explicit on-behalf-of authorization remains deferred, and the current YAML seed path is an operator-trusted publishing boundary rather than an authenticated high-authority publication workflow.
+
+Exit gate: the adversarial matrix is reproducible in CI and all covered security invariants fail closed.
+
 ## Phase 10 — Evaluation
 
 Deliver:
