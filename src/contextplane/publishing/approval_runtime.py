@@ -177,8 +177,9 @@ def _audit_proposal_creation_failure(
         previous_record_id=request.previous_id,
         error_code=error_code,
     )
+    publication_id = audit.publication_id
     session.commit()
-    return audit.publication_id
+    return publication_id
 
 
 def create_publication_proposal(
@@ -356,11 +357,13 @@ def approve_publication_proposal(
             outcome=ApprovalEventOutcome.DENIED,
             error_code="approval_not_authorized",
         )
+        denied_proposal_id = proposal.proposal_id
+        event_id = event.event_id
         session.commit()
         raise ApprovalWorkflowDeniedError(
             str(exc),
-            proposal_id=proposal.proposal_id,
-            event_id=event.event_id,
+            proposal_id=denied_proposal_id,
+            event_id=event_id,
             error_code="approval_not_authorized",
         ) from None
 
@@ -421,11 +424,13 @@ def activate_publication_proposal(
             outcome=ApprovalEventOutcome.DENIED,
             error_code="activation_not_authorized",
         )
+        denied_proposal_id = proposal.proposal_id
+        event_id = event.event_id
         session.commit()
         raise ApprovalWorkflowDeniedError(
             str(exc),
-            proposal_id=proposal.proposal_id,
-            event_id=event.event_id,
+            proposal_id=denied_proposal_id,
+            event_id=event_id,
             error_code="activation_not_authorized",
         ) from None
 
@@ -454,11 +459,13 @@ def activate_publication_proposal(
             permission_used=permission,
             error_code="approval_required",
         )
+        conflict_proposal_id = proposal.proposal_id
+        event_id = event.event_id
         session.commit()
         raise ApprovalWorkflowConflictError(
             "publication proposal must be approved before activation",
-            proposal_id=proposal.proposal_id,
-            event_id=event.event_id,
+            proposal_id=conflict_proposal_id,
+            event_id=event_id,
             error_code="approval_required",
         )
 
@@ -493,11 +500,12 @@ def activate_publication_proposal(
             permission_used=permission,
             error_code="previous_not_found",
         )
+        event_id = event.event_id
         session.commit()
         raise ApprovalWorkflowNotFoundError(
             "supersession target is no longer available",
             proposal_id=proposal_id,
-            event_id=event.event_id,
+            event_id=event_id,
             error_code="previous_not_found",
         ) from None
     except (ContextVersionConflictError, ContextIdentityMismatchError):
@@ -512,11 +520,12 @@ def activate_publication_proposal(
             permission_used=permission,
             error_code="version_conflict",
         )
+        event_id = event.event_id
         session.commit()
         raise ApprovalWorkflowConflictError(
             "proposal activation conflicts with immutable version state",
             proposal_id=proposal_id,
-            event_id=event.event_id,
+            event_id=event_id,
             error_code="version_conflict",
         ) from None
 
