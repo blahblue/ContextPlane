@@ -7,6 +7,8 @@ This directory contains the public technical design for ContextPlane.
 - [Architecture](ARCHITECTURE.md)
 - [Context model](CONTEXT_MODEL.md)
 - [Security model](SECURITY.md)
+- [Security validation checklist](SECURITY_VALIDATION_CHECKLIST.md)
+- [Post-MVP security audit — 2026-10-02](SECURITY_AUDIT_2026-10-02.md)
 - [Runtime resolve API](RUNTIME_API.md)
 - [Implementation plan](IMPLEMENTATION_PLAN.md)
 - [PR backlog](PR_BACKLOG.md)
