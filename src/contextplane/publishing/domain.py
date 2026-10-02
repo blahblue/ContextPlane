@@ -14,7 +14,6 @@ from contextplane.context_registry.domain import (
     ContextDomain,
     OverridePolicy,
     SensitivityLevel,
-    SourceType,
 )
 
 NonEmptyPublicationString = Annotated[
@@ -75,11 +74,10 @@ class PublicationScopeInput(BaseModel):
 
 
 class PublicationSourceInput(BaseModel):
-    """Semantic provenance supplied by an authorized publisher."""
+    """Descriptive source reference for an API-authored context item."""
 
     model_config = ConfigDict(extra="forbid")
 
-    type: SourceType
     identifier: NonEmptyPublicationString
     uri: NonEmptyPublicationString | None = None
 
