@@ -1,7 +1,7 @@
 # Threat Model
 
 Status: draft  
-Last updated: 2026-09-28
+Last updated: 2026-10-01
 
 ## Scope
 
@@ -208,7 +208,9 @@ Mitigations:
 
 ## Security test categories
 
-The MVP should include tests for:
+PR-019 adds a cross-component adversarial regression matrix in [docs/ADVERSARIAL_TEST_MATRIX.md](docs/ADVERSARIAL_TEST_MATRIX.md).
+
+The MVP includes tests for:
 
 - cross-tenant denial;
 - user privilege escalation;
