@@ -4,6 +4,7 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.orm import Session
 
+from contextplane.audit.db import ResolutionAuditRecord
 from contextplane.auth import Principal, PrincipalKind
 from contextplane.cache import InMemoryResolutionCache
 from contextplane.context_registry import (
@@ -170,12 +171,21 @@ def test_user_scoped_context_cannot_be_retrieved_by_other_subject(engine) -> Non
 def test_missing_runtime_permission_cannot_be_escalated_by_request(engine) -> None:
     tenant = f"adv-permission-{uuid4()}"
 
-    with Session(engine) as session, pytest.raises(RuntimeAuthorizationError):
+    with Session(engine) as session, pytest.raises(RuntimeAuthorizationError) as exc_info:
         resolve(
             session,
             who=principal(tenant, scopes=frozenset()),
             repository="privileged-repository",
         )
+
+    with Session(engine) as session:
+        audit = session.get(ResolutionAuditRecord, exc_info.value.resolution_id)
+
+    assert audit is not None
+    assert audit.tenant_id == tenant
+    assert audit.outcome == "denied"
+    assert audit.error_code == "insufficient_permission"
+    assert audit.selector_dimensions == ["repository"]
 
 
 def test_foreign_tenant_policy_configuration_fails_closed_before_retrieval(engine) -> None:
