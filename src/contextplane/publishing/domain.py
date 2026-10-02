@@ -1,5 +1,6 @@
 """Authenticated publishing contracts and persisted audit semantics."""
 
+import json
 from datetime import datetime
 from enum import StrEnum
 from typing import Annotated
@@ -20,6 +21,7 @@ NonEmptyPublicationString = Annotated[
     str,
     StringConstraints(strip_whitespace=True, min_length=1, max_length=512),
 ]
+MAX_PUBLICATION_REQUEST_BYTES = 262_144
 
 
 class PublicationAction(StrEnum):
@@ -113,6 +115,15 @@ class PublishContextRequest(BaseModel):
             raise ValueError("exactly one of value or payload_ref must be provided")
         if self.effective_to is not None and self.effective_to <= self.effective_from:
             raise ValueError("effective_to must be later than effective_from")
+
+        serialized = json.dumps(
+            self.model_dump(mode="json"),
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+        ).encode("utf-8")
+        if len(serialized) > MAX_PUBLICATION_REQUEST_BYTES:
+            raise ValueError("publication request exceeds maximum serialized size")
         return self
 
 
