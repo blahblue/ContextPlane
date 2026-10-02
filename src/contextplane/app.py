@@ -2,6 +2,7 @@
 
 from fastapi import FastAPI
 
+from contextplane.api.approval import router as approval_router
 from contextplane.api.publishing import router as publishing_router
 from contextplane.api.runtime import router as context_router
 from contextplane.http_security import HttpPerimeterConfig, HttpPerimeterMiddleware
@@ -24,6 +25,7 @@ app.add_middleware(
 )
 app.include_router(context_router)
 app.include_router(publishing_router)
+app.include_router(approval_router)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["system"])
