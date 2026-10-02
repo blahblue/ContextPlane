@@ -32,3 +32,5 @@ New ADRs should use a short sequential number and include:
 - [ADR-016 — Use PostgreSQL RLS as tenant defense in depth](016-postgres-tenant-rls.md)
 
 - [ADR-017 — Authorize publication by explicit authority permission](017-publishing-authorization.md)
+
+- [ADR-018 — Derive publication identity server-side and persist actor provenance](018-authenticated-publishing-runtime.md)
