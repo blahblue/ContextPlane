@@ -33,6 +33,9 @@ Status values: **planned**, **partial**, **implemented**, **verified**, **deferr
 | Runtime | Python SDK | No | deferred | REST + MCP are the MVP client surfaces |
 | Audit | Resolution log | Yes | verified | append-only DB trigger + success/deny/conflict + actor-scoped lookup tests |
 | Security | Adversarial regression suite | Yes | verified | 25-scenario threat matrix + cross-component runtime/policy/cache tests |
+| Security | Software supply-chain gates | Yes | verified | Gitleaks + pip-audit + pinned CI actions + Dependabot |
+| Security | REST perimeter hardening | Yes | verified | no-store headers + security headers + input bounds + reference rate limiting |
+| Security | PostgreSQL tenant RLS | Yes | verified | non-owner direct-read/write isolation tests + transaction-local tenant binding |
 | Evaluation | Reproducible MVP benchmark | Yes | verified | CI run 36990742946: 4/4 golden, 0 policy violations, 0% over-retrieval, REST/MCP consistent |
 | Client | Coding-agent demo | Yes | verified | exact seed fixture + repository-specific MCP helper integration + Cursor config validation |
 | Client | Copilot Studio demo | Yes | verified | identity-aware MCP helper demo + cross-user/tenant isolation + authoritative-update tests |
