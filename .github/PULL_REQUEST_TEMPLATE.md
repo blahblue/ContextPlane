@@ -12,7 +12,40 @@ What is the smallest coherent implementation?
 
 ## Security implications
 
-Consider authentication, authorization, tenant isolation, data exposure, source trust, prompt injection, and policy behavior.
+Review [docs/SECURITY_VALIDATION_CHECKLIST.md](../docs/SECURITY_VALIDATION_CHECKLIST.md).
+
+Feature / surface:
+
+Sensitive data touched:
+
+Trust boundaries crossed:
+
+Applicable controls:
+- [ ] Authentication
+- [ ] Authorization / tenant isolation
+- [ ] Input validation / injection
+- [ ] Database / RLS
+- [ ] API response minimization
+- [ ] HTTP headers / HTTPS
+- [ ] Rate limiting / abuse
+- [ ] Audit / logging
+- [ ] Dependencies / supply chain
+- [ ] Caching
+- [ ] Privacy / data minimization
+- [ ] Other: ______
+
+Threats considered:
+
+Controls implemented:
+
+Negative/adversarial tests:
+
+Known residual risks / follow-ups:
+
+Security result:
+- [ ] PASS
+- [ ] PASS WITH FOLLOW-UP
+- [ ] BLOCKED
 
 ## Verification plan
 
