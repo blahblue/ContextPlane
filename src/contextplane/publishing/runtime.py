@@ -68,6 +68,10 @@ class PublicationNotFoundError(PublicationRuntimeError):
     """Supersession target is not visible in the authenticated tenant."""
 
 
+class PublicationApprovalRequiredError(PublicationConflictError):
+    """High-authority context must use the approval workflow."""
+
+
 def _response_from_audit(
     *,
     audit_record: PublicationAuditRecord,
@@ -116,11 +120,12 @@ def _replay_existing(
             error_code=existing.error_code,
         )
     if existing.outcome == PublicationOutcome.CONFLICT.value:
-        error_cls = (
-            PublicationNotFoundError
-            if existing.error_code == "previous_not_found"
-            else PublicationConflictError
-        )
+        if existing.error_code == "previous_not_found":
+            error_cls = PublicationNotFoundError
+        elif existing.error_code == "approval_required":
+            error_cls = PublicationApprovalRequiredError
+        else:
+            error_cls = PublicationConflictError
         raise error_cls(
             "publication could not be applied",
             publication_id=existing.publication_id,
@@ -201,12 +206,38 @@ def publish_context(
             previous_record_id=previous_id,
             error_code="not_authorized",
         )
+        publication_id = audit.publication_id
         session.commit()
         raise PublicationDeniedError(
             "publication is not authorized",
-            publication_id=audit.publication_id,
+            publication_id=publication_id,
             error_code="not_authorized",
         ) from None
+
+    if item.authority_level in {
+        AuthorityLevel.POLICY,
+        AuthorityLevel.MANDATORY_CONTROL,
+    }:
+        audit = create_publication_audit(
+            session,
+            principal=principal,
+            action=action,
+            authority_level=item.authority_level.value,
+            idempotency_key_hash=idempotency_key_hash,
+            request_hash=request_hash,
+            key_hash=key_hash,
+            outcome=PublicationOutcome.CONFLICT,
+            authorization=authorization,
+            previous_record_id=previous_id,
+            error_code="approval_required",
+        )
+        publication_id = audit.publication_id
+        session.commit()
+        raise PublicationApprovalRequiredError(
+            "high-authority publication requires approval workflow",
+            publication_id=publication_id,
+            error_code="approval_required",
+        )
 
     if action is PublicationAction.SUPERSEDE:
         assert previous_id is not None
@@ -230,10 +261,11 @@ def publish_context(
                 previous_record_id=previous_id,
                 error_code="previous_not_found",
             )
+            publication_id = audit.publication_id
             session.commit()
             raise PublicationNotFoundError(
                 "context item was not found",
-                publication_id=audit.publication_id,
+                publication_id=publication_id,
                 error_code="previous_not_found",
             )
 
@@ -251,10 +283,11 @@ def publish_context(
                 previous_record_id=previous_id,
                 error_code="authority_transition_requires_approval",
             )
+            publication_id = audit.publication_id
             session.commit()
             raise PublicationConflictError(
                 "supersession cannot change authority level",
-                publication_id=audit.publication_id,
+                publication_id=publication_id,
                 error_code="authority_transition_requires_approval",
             )
 
@@ -290,10 +323,11 @@ def publish_context(
             previous_record_id=previous_id,
             error_code="previous_not_found",
         )
+        publication_id = audit.publication_id
         session.commit()
         raise PublicationNotFoundError(
             "context item was not found",
-            publication_id=audit.publication_id,
+            publication_id=publication_id,
             error_code="previous_not_found",
         ) from None
     except (ContextVersionConflictError, ContextIdentityMismatchError):
@@ -312,10 +346,11 @@ def publish_context(
             previous_record_id=previous_id,
             error_code="version_conflict",
         )
+        publication_id = audit.publication_id
         session.commit()
         raise PublicationConflictError(
             "context publication conflicts with immutable version state",
-            publication_id=audit.publication_id,
+            publication_id=publication_id,
             error_code="version_conflict",
         ) from None
 
@@ -335,6 +370,7 @@ def publish_context(
         version=record.version,
     )
     session.commit()
+    bind_session_tenant(session, principal.tenant_id)
 
     return _response_from_audit(
         audit_record=audit,
