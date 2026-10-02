@@ -162,14 +162,28 @@ def resolve_context_runtime(
     """Execute the transport-neutral ContextPlane resolution pipeline."""
     evaluated_at = as_of or datetime.now(UTC)
     correlation_id = resolution_id or uuid4()
+    selector_dimensions = _selector_dimensions(request)
 
     if not principal_has_permission(principal, "context.resolve"):
+        create_resolution_audit(
+            session,
+            build_resolution_audit(
+                resolution_id=correlation_id,
+                principal=principal,
+                as_of=evaluated_at,
+                requested_domains=request.domains,
+                requested_keys=request.keys,
+                selector_dimensions=selector_dimensions,
+                policy=None,
+                outcome=AuditOutcome.DENIED,
+                error_code="insufficient_permission",
+            ),
+        )
+        session.commit()
         raise RuntimeAuthorizationError(
             "insufficient permission",
             resolution_id=correlation_id,
         )
-
-    selector_dimensions = _selector_dimensions(request)
 
     try:
         policy = evaluate_policy(

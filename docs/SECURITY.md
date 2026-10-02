@@ -110,7 +110,7 @@ The public `POST /v1/context/resolve` contract derives tenant, user/agent subjec
 
 Task, audience, and environment are contextual selectors, not authorization credentials. Repository/resource/team/role/business-unit selectors remain outside the public contract until they can be bound to an entitlement decision.
 
-Policy is evaluated before context retrieval. Domain denial can short-circuit retrieval, and key narrowing is applied before conflict precedence.
+Authenticated principals that lack `context.resolve` are rejected before policy/context retrieval and the denial is written to the resolution audit with no context payload. Policy is then evaluated before context retrieval. Domain denial can short-circuit retrieval, and key narrowing is applied before conflict precedence.
 
 Runtime provenance intentionally omits raw source URIs. The API returns enough provenance to identify owner/source/version while avoiding unnecessary disclosure of internal source locations.
 

@@ -1,7 +1,7 @@
 # Threat Model
 
 Status: draft  
-Last updated: 2026-09-28
+Last updated: 2026-10-01
 
 ## Scope
 
@@ -70,12 +70,16 @@ Mitigations:
 
 An agent has broader access than the user it acts for, or user and agent identity are conflated.
 
-Mitigations:
+Current mitigations:
 
-- distinct user and agent principals;
-- explicit on-behalf-of semantics;
-- effective permissions derived from both identities;
-- deny ambiguous identity chains.
+- distinct user, agent, and service principals;
+- deny ambiguous identity classification;
+- authenticated MCP identity cannot be supplied through model tool arguments.
+
+Deferred hardening:
+
+- explicit on-behalf-of identity chains;
+- effective authorization derived from both human and delegated agent identity where the provider supplies that relationship.
 
 ### T4 — Prompt injection in source content
 
@@ -91,13 +95,22 @@ Mitigations:
 
 A malicious or low-quality source introduces false context.
 
-Mitigations:
+Current mitigations:
 
-- explicit source ownership;
-- provenance;
-- publication state;
+- explicit source ownership and provenance metadata;
 - immutable versions;
-- owner review for high-authority context.
+- deterministic authority/override precedence;
+- equal-precedence conflicts fail closed.
+
+Current trust assumption:
+
+- the YAML seed path is operator-controlled bootstrap input; ContextPlane currently trusts the authority/owner metadata admitted through that administrative boundary.
+
+Deferred hardening:
+
+- authenticated publication workflow;
+- authorization over who may publish policy/mandatory-control authority;
+- owner approval for high-authority context and external source connectors.
 
 ### T6 — Stale policy
 
@@ -208,7 +221,9 @@ Mitigations:
 
 ## Security test categories
 
-The MVP should include tests for:
+PR-019 adds a cross-component adversarial regression matrix in [docs/ADVERSARIAL_TEST_MATRIX.md](docs/ADVERSARIAL_TEST_MATRIX.md).
+
+The MVP includes tests for:
 
 - cross-tenant denial;
 - user privilege escalation;

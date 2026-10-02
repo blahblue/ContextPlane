@@ -223,6 +223,8 @@ Acceptance:
 
 ### PR-019 — Adversarial policy suite
 
+**Status:** verified
+
 Dependencies: PR-018
 
 Acceptance:
