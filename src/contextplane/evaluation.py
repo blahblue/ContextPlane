@@ -352,7 +352,7 @@ def run_evaluation(engine: Engine) -> EvaluationReport:
 
     app.dependency_overrides[authenticate_principal] = lambda: principal
     app.dependency_overrides[get_database_session] = session_override
-    app.dependency_overrides[get_policy_rules] = tuple
+    app.dependency_overrides[get_policy_rules] = lambda: ()
     app.dependency_overrides[get_resolution_cache] = lambda: cache
 
     try:
