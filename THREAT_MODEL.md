@@ -108,11 +108,18 @@ Current trust assumption:
 
 - the YAML seed path is operator-controlled bootstrap input; ContextPlane currently trusts the authority/owner metadata admitted through that administrative boundary.
 
+Current publishing hardening:
+
+- PR-024 defines explicit, non-inheriting publication permissions for every authority level;
+- self-preference publication is restricted to the authenticated user and cannot target another user or unscoped organizational context;
+- publication tenant must equal the authenticated principal tenant.
+
 Deferred hardening:
 
-- authenticated publication workflow;
-- authorization over who may publish policy/mandatory-control authority;
-- owner approval for high-authority context and external source connectors.
+- authenticated write API applying this model;
+- persisted publisher provenance distinct from semantic owner metadata;
+- owner/approver workflow for policy and mandatory-control publication;
+- external source connector publication authorization.
 
 ### T6 — Stale policy
 

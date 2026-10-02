@@ -101,7 +101,19 @@ The core ContextPlane property is:
 - [ ] Private context is never placed in a shared public cache.
 - [ ] HTTP cache headers match response sensitivity.
 
-## 9. Audit and logging
+## 9. Publishing and authority assignment
+
+- [ ] Context publishing requires an authenticated principal.
+- [ ] Tenant is derived from authenticated identity and cannot be selected cross-tenant.
+- [ ] Each authority level requires an explicit publication permission.
+- [ ] Higher authority permission does not silently imply unrelated lower-authority publishing rights.
+- [ ] Self-preference publishing is limited to the authenticated user's own user scope.
+- [ ] Publisher identity is persisted separately from semantic owner/source metadata.
+- [ ] Policy and mandatory-control publication has an explicit approval model before production authoring is opened broadly.
+- [ ] Supersession authorization is evaluated against the replacement authority and target tenant.
+- [ ] Publication failures are audited without copying sensitive payloads.
+
+## 10. Audit and logging
 
 - [ ] Security-relevant runtime outcomes generate audit records.
 - [ ] Denied authenticated requests are audited without copying sensitive payloads.
@@ -111,7 +123,7 @@ The core ContextPlane property is:
 - [ ] Production logs distinguish operational diagnostics from security/audit history.
 - [ ] External WORM/SIEM retention is evaluated for production.
 
-## 10. Dependencies and software supply chain
+## 11. Dependencies and software supply chain
 
 - [ ] New dependencies are justified.
 - [ ] Unused dependencies are removed.
@@ -123,7 +135,7 @@ The core ContextPlane property is:
 - [ ] Package sources are trusted.
 - [ ] High/Critical dependency findings block release unless explicitly risk-accepted.
 
-## 11. Resilience and failure modes
+## 12. Resilience and failure modes
 
 - [ ] Token-validation failure denies access.
 - [ ] Policy/configuration ambiguity fails closed.
@@ -132,7 +144,7 @@ The core ContextPlane property is:
 - [ ] Retry logic does not duplicate sensitive state changes.
 - [ ] Security errors remain observable through safe correlation/audit identifiers.
 
-## 12. Privacy, legal, accessibility, and user control
+## 13. Privacy, legal, accessibility, and user control
 
 The supplied launch checklist includes privacy policy, terms, cookie consent, form consent, data minimization, third-party SDK disclosure, dark-pattern/hidden-fee review, unsupported claims, accessibility, business details, age consent, unsubscribe links, asset licensing, and deletion requests.
 
@@ -147,7 +159,7 @@ For the current ContextPlane repository:
 - data deletion/retention: **Applicable to hosted deployments** because context and audit data can contain enterprise identifiers; retention and deletion policy must be defined before production launch;
 - third-party processors: **Applicable** for Entra, hosting/database providers, and any future source connectors.
 
-## 13. Performance checklist adapted from the supplied launch review
+## 14. Performance checklist adapted from the supplied launch review
 
 Security-safe performance expectations:
 
