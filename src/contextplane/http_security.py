@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from threading import Lock
 
 from fastapi import Request, Response, status
-from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.types import ASGIApp
 
 
@@ -115,7 +115,7 @@ class HttpPerimeterMiddleware(BaseHTTPMiddleware):
         # Hash rather than retain raw peer values in process memory.
         return hashlib.sha256(direct_host.encode("utf-8")).hexdigest()
 
-    async def dispatch(self, request: Request, call_next) -> Response:  # type: ignore[no-untyped-def]
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         if request.url.path.startswith("/v1/"):
             if not self._limiter.allow(self._client_key(request)):
                 response = Response(
