@@ -211,7 +211,9 @@ Acceptance:
 
 ### PR-018 — Copilot Studio demo
 
-Dependencies: PR-015, PR-011
+**Status:** verified
+
+Dependencies: PR-011, PR-015, PR-016
 
 Acceptance:
 - identity-aware brand/presentation context;
