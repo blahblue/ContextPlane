@@ -242,3 +242,53 @@ Dependencies: PR-019
 
 Acceptance:
 - reproducible latency, retrieval-size, rule-accuracy, policy-violation, and client-consistency benchmarks.
+
+
+## Post-MVP governance hardening
+
+### PR-024 — Publishing authorization model
+
+**Status:** in progress
+
+Dependencies: PR-023
+
+Acceptance:
+- explicit publication permission for each authority level;
+- no implicit authority hierarchy;
+- self-preference permission can only target the authenticated user's own scope;
+- cross-tenant publication fails closed;
+- create and supersede actions share the same authorization contract;
+- ADR and adversarial tests document the model.
+
+### PR-025 — Authenticated context write API
+
+Dependencies: PR-024
+
+Acceptance:
+- authenticated create/supersede endpoints;
+- tenant and publisher identity are server-derived;
+- idempotency and immutable versioning;
+- publication audit records;
+- no generic arbitrary-authority write path.
+
+### PR-026 — High-authority approval workflow
+
+Dependencies: PR-025
+
+Acceptance:
+- draft/approved/active lifecycle for policy and mandatory controls;
+- configurable separation between publisher and approver;
+- immutable approval provenance.
+
+### PR-027 — Publishing adversarial suite
+
+Dependencies: PR-026
+
+Acceptance:
+- cross-tenant writes;
+- forged authority/owner/source metadata;
+- self-approval;
+- stale supersession;
+- replay/idempotency;
+- concurrent version conflicts;
+- mandatory-control downgrade/bypass attempts.
