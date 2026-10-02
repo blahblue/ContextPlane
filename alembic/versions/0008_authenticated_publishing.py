@@ -35,9 +35,17 @@ def upgrade() -> None:
         OR
         (
           publisher_subject IS NOT NULL
+          AND length(btrim(publisher_subject)) > 0
           AND publisher_kind IN ('user','agent','service')
           AND publication_action IN ('create','supersede')
-          AND publication_permission IS NOT NULL
+          AND publication_permission IN (
+            'context.publish.preference.self',
+            'context.publish.preference',
+            'context.publish.recommendation',
+            'context.publish.standard',
+            'context.publish.policy',
+            'context.publish.mandatory_control'
+          )
         )
         """,
     )
