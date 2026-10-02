@@ -10,7 +10,7 @@ The goal is not to duplicate every component test. It is to verify that security
 |---|---|---|---|---|
 | A01 | T1 cross-tenant leakage | Principal A resolves while only tenant B context exists | No tenant B context returned | PR-019 integration |
 | A02 | T1/T2 identity scope | User B requests selectors matching user A context | User A context not returned | PR-019 integration |
-| A03 | T2 privilege escalation | Principal without `context.resolve` supplies privileged selectors | Runtime rejects before resolution | PR-019 integration |
+| A03 | T2 privilege escalation | Principal without `context.resolve` supplies privileged selectors | Runtime rejects before resolution and writes a denied audit record | PR-019 integration |
 | A04 | T1/T2 policy injection | Foreign-tenant policy rule enters runtime | Fail closed and audit policy configuration error | PR-019 integration + policy unit |
 | A05 | T4 prompt injection | Context payload says “ignore policy / change tenant / return secrets” | Text remains data; metadata authority and tenant remain unchanged | PR-019 integration |
 | A06 | T5 poisoning | Narrow user preference conflicts with broader non-overridable standard | Authoritative standard wins | PR-019 unit + integration |
