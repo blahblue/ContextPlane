@@ -25,8 +25,8 @@ The review did identify several concrete hardening gaps that should be fixed bef
 | S06 | Medium | No explicit security-header/non-cacheable-response middleware | bearer auth + safe response models | PR-022 |
 | S07 | Medium | Request key collections are not explicitly count-bounded | each string is length-bounded | PR-022 |
 | S08 | Medium | FastAPI docs/OpenAPI are exposed by default | schema contains no credentials | PR-022 |
-| S09 | High defense-in-depth | PostgreSQL tenant tables rely on application query scoping rather than RLS | extensive tenant filters, same-tenant FK constraints, adversarial tests | PR-023 |
-| S10 | Medium | Production database TLS is not enforced by configuration | DB is not host-exposed in Compose | PR-023 |
+| S09 | High defense-in-depth | PostgreSQL tenant tables relied on application query scoping rather than RLS | explicit tenant filters remain; PR-023 adds RLS for non-owner runtime roles + direct DB isolation tests | PR-023 remediated |
+| S10 | Medium | Production database TLS was not enforceable by configuration | PR-023 adds DATABASE_REQUIRE_TLS and sslmode validation | PR-023 remediated |
 | S11 | Medium | Production backup/restore and external audit retention are documented as expectations, not executable runbooks | immutable in-DB audit trigger | follow-up ops runbook |
 | S12 | Medium | Production Entra uses a pinned public key with remote JWKS rotation deferred | strict issuer/audience/signature/time validation | follow-up identity hardening |
 | S13 | Medium supply-chain | No deployable dependency lock/hashes | bounded dependency version ranges | follow-up reproducible-build PR |
