@@ -36,7 +36,6 @@ from contextplane.publishing.domain import (
     ApprovalEventType,
     CreatePublicationProposalRequest,
     PublicationAction,
-    PublicationApprovalPermission,
     PublicationAuthorization,
     PublicationOutcome,
     PublicationPermission,
