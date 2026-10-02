@@ -201,3 +201,20 @@ The latency number is a reference CI regression signal, not a production SLO or 
 ## Recommended sequencing
 
 Do **not** begin with broad SaaS connectors. Seed the first corpus with repository-owned YAML/JSON fixtures so the resolver and policy model can be proven independently of connector complexity.
+
+
+## Phase 11 — Authenticated publishing governance
+
+**PR-024 publishing authorization model: verified. Authenticated write API and approval workflow remain PR-025/PR-026.**
+
+PR-024 establishes:
+
+- explicit, non-inheriting permissions for preference, recommendation, standard, policy, and mandatory-control publication;
+- a narrow self-preference permission restricted to user principals targeting their own user scope;
+- cross-tenant publication denial before authority evaluation;
+- one authorization contract for create and supersede actions;
+- an auditable authorization decision containing authenticated actor identity, action, authority, and permission used.
+
+Verification: GitHub Actions run 36999501915 passed secret scanning, dependency audit, Ruff, strict mypy, PostgreSQL migrations, 287 tests at 94.57% coverage, and the MVP evaluation.
+
+The write path is intentionally not exposed yet. PR-025 must derive tenant and publisher identity server-side and persist publisher provenance separately from semantic owner/source metadata. PR-026 then adds approval state for high-authority publication.
