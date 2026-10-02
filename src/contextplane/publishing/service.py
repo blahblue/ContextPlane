@@ -1,6 +1,6 @@
 """Fail-closed authorization rules for context publishing."""
 
-from contextplane.auth import Principal, principal_has_permission
+from contextplane.auth import Principal, PrincipalKind, principal_has_permission
 from contextplane.context_registry.domain import AuthorityLevel, ContextItemCreate
 from contextplane.publishing.domain import (
     PublicationAction,
@@ -38,7 +38,7 @@ def authorize_publication(
 
     if item.authority_level is AuthorityLevel.PREFERENCE:
         is_self_user_preference = (
-            principal.kind.value == "user"
+            principal.kind is PrincipalKind.USER
             and item.scope.user_id == principal.subject
             and item.scope.agent_id is None
         )
