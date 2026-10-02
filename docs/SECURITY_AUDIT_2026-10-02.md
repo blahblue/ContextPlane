@@ -17,7 +17,7 @@ The review did identify several concrete hardening gaps that should be fixed bef
 
 | ID | Severity | Finding | Current protection | Action |
 |---|---|---|---|---|
-| S01 | High | No dependency-vulnerability scan in CI | typed/tests only | PR-021 |
+| S01 | High | No dependency-vulnerability scan in CI; first scan found PYSEC-2026-1845 in pytest 8.4.2 | typed/tests only | PR-021: scanner added and pytest raised to >=9.0.3 |
 | S02 | High | No automated repository/history secret scan | `.gitignore`, env configuration | PR-021 |
 | S03 | Medium | GitHub Actions use mutable major-version tags | least-privilege workflow permissions | PR-021 |
 | S04 | Medium | No automated dependency-update configuration | version ranges in pyproject | PR-021 |
@@ -92,6 +92,8 @@ Not yet established: load-balanced production deployment, large-corpus query-cou
 ## PR plan
 
 ### PR-021 — security baseline and software supply chain
+
+The first enforced pip-audit run immediately found PYSEC-2026-1845 in the prior pytest 8.4.2 development dependency. PR-021 upgrades the test dependency to pytest >=9.0.3 and keeps the audit as a blocking CI gate.
 
 - adopt the ContextPlane-specific security checklist;
 - add secret scanning;
