@@ -196,3 +196,41 @@ The default local limiter is 120 requests/minute per direct peer and is configur
 - `CONTEXTPLANE_HTTP_RATE_LIMIT_MAX_CLIENTS`.
 
 Production TLS must still be terminated/enforced at a trusted ingress or at the application server. Do not trust arbitrary forwarded-protocol/client-IP headers merely to make HTTPS or rate-limit checks pass.
+
+
+## PostgreSQL tenant defense in depth
+
+ContextPlane enables row-level security on its tenant-bearing runtime tables. The policies compare each row's `tenant_id` to a transaction-local `contextplane.tenant_id` setting.
+
+The governed runtime sets that value from the authenticated principal before tenant-bearing database work. Audit lookup does the same.
+
+Application-level tenant predicates remain required. RLS is a second boundary intended to reduce the impact of a future missing tenant predicate.
+
+### Runtime-role requirement
+
+Ordinary PostgreSQL RLS does not constrain table owners or superusers. A production deployment that relies on these policies must therefore separate:
+
+- **migration/admin role** — owns schema and runs migrations/bootstrap;
+- **runtime role** — non-owner, non-superuser, granted only the table operations required by the service.
+
+The migration intentionally does not create environment-specific database roles and does not use `FORCE ROW LEVEL SECURITY`, because administrative migration/bootstrap paths must remain explicit rather than being accidentally coupled to runtime tenant state.
+
+CI verifies the policies using a temporary non-owner role: a role bound to tenant A cannot see tenant B rows and cannot insert a tenant B state row.
+
+See ADR-016.
+
+## PostgreSQL transport security
+
+Set:
+
+```text
+CONTEXTPLANE_DATABASE_REQUIRE_TLS=true
+```
+
+for production deployments. When enabled, application startup rejects a database URL unless it explicitly uses one of:
+
+- `sslmode=require`;
+- `sslmode=verify-ca`;
+- `sslmode=verify-full`.
+
+Prefer `verify-full` when possible because it verifies both the certificate chain and hostname. Local Docker development may keep TLS enforcement disabled.
