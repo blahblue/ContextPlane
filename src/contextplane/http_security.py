@@ -48,7 +48,7 @@ class HttpPerimeterConfig:
     max_tracked_clients: int = 10_000
 
     @classmethod
-    def from_environment(cls) -> "HttpPerimeterConfig":
+    def from_environment(cls) -> HttpPerimeterConfig:
         """Read bounded REST-perimeter controls from environment variables."""
         return cls(
             expose_api_docs=_bool_env("CONTEXTPLANE_EXPOSE_API_DOCS", False),
