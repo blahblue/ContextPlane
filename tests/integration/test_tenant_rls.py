@@ -133,6 +133,7 @@ def test_non_owner_role_cannot_read_across_bound_tenant(engine) -> None:
             transaction.rollback()
     finally:
         with engine.begin() as connection:
+            connection.execute(text(f'DROP OWNED BY "{role_name}"'))
             connection.execute(text(f'DROP ROLE IF EXISTS "{role_name}"'))
 
 
@@ -173,4 +174,5 @@ def test_non_owner_role_cannot_insert_foreign_tenant_state(engine) -> None:
             transaction.rollback()
     finally:
         with engine.begin() as connection:
+            connection.execute(text(f'DROP OWNED BY "{role_name}"'))
             connection.execute(text(f'DROP ROLE IF EXISTS "{role_name}"'))
