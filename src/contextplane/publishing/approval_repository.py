@@ -1,5 +1,7 @@
 """Persistence helpers for high-authority publication proposals and events."""
 
+from uuid import UUID
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -42,7 +44,7 @@ def get_proposal(
     session: Session,
     *,
     tenant_id: str,
-    proposal_id,
+    proposal_id: UUID,
     for_update: bool = False,
 ) -> PublicationProposalRecord | None:
     """Return one tenant-scoped proposal, optionally locking it."""
@@ -59,7 +61,7 @@ def get_successful_event(
     session: Session,
     *,
     tenant_id: str,
-    proposal_id,
+    proposal_id: UUID,
     event_type: ApprovalEventType,
 ) -> PublicationApprovalEventRecord | None:
     """Return the successful immutable event for one lifecycle step."""
@@ -81,12 +83,12 @@ def create_approval_event(
     session: Session,
     *,
     principal: Principal,
-    proposal_id,
+    proposal_id: UUID,
     event_type: ApprovalEventType,
     outcome: ApprovalEventOutcome,
     permission_used: PublicationApprovalPermission | None = None,
-    context_record_id=None,
-    logical_id=None,
+    context_record_id: UUID | None = None,
+    logical_id: UUID | None = None,
     version: int | None = None,
     error_code: str | None = None,
 ) -> PublicationApprovalEventRecord:
