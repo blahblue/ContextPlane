@@ -52,8 +52,10 @@ Mitigations:
 - tenant required in every principal;
 - tenant filtering before candidate selection;
 - tenant included in cache keys;
+- transaction-local authenticated tenant binding;
+- PostgreSQL RLS for non-owner runtime roles;
 - fail closed on missing/ambiguous tenant;
-- negative integration tests.
+- negative integration tests including direct non-owner database access.
 
 ### T2 — User privilege escalation
 
