@@ -80,10 +80,17 @@ class ContextItemRecord(Base):
             "publisher_subject IS NULL AND publisher_kind IS NULL "
             "AND publication_action IS NULL AND publication_permission IS NULL"
             ") OR ("
-            "publisher_subject IS NOT NULL "
+            "publisher_subject IS NOT NULL AND length(btrim(publisher_subject)) > 0 "
             "AND publisher_kind IN ('user','agent','service') "
             "AND publication_action IN ('create','supersede') "
-            "AND publication_permission IS NOT NULL"
+            "AND publication_permission IN ("
+            "'context.publish.preference.self',"
+            "'context.publish.preference',"
+            "'context.publish.recommendation',"
+            "'context.publish.standard',"
+            "'context.publish.policy',"
+            "'context.publish.mandatory_control'"
+            ")"
             ")",
             name="ck_context_items_publication_provenance_shape",
         ),
