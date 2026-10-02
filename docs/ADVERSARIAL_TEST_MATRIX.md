@@ -40,6 +40,7 @@ This suite does not claim:
 
 - resistance to a database owner or host administrator;
 - safety of external connectors that do not yet exist;
+- protection from an administrator who is already trusted to publish arbitrary high-authority seed metadata;
 - that an LLM will obey returned context;
 - authorization to an underlying repository merely because a repository selector matches;
 - production robustness of remote JWKS rotation, Graph group-overage expansion, or tenant-specific Copilot configuration.
