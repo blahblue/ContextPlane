@@ -75,7 +75,6 @@ def body(
         "scope": scope,
         "owner": "platform-engineering",
         "source": {
-            "type": "api",
             "identifier": "publishing-integration",
         },
         "authority_level": authority,
@@ -438,3 +437,22 @@ def test_publication_audit_delete_is_rejected(engine) -> None:
             )
             session.commit()
         session.rollback()
+
+
+
+def test_authenticated_write_cannot_forge_connector_source_type() -> None:
+    tenant = f"publish-source-{uuid4()}"
+    authenticate_as(
+        principal(
+            tenant,
+            permissions=frozenset({PublicationPermission.STANDARD.value}),
+        )
+    )
+    payload = body()
+    source = dict(payload["source"])  # type: ignore[arg-type]
+    source["type"] = "git"
+    payload["source"] = source
+
+    response = publish(TestClient(app), payload=payload, idem="forged-source")
+
+    assert response.status_code == 422
