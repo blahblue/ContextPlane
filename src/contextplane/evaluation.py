@@ -6,7 +6,9 @@ import asyncio
 import json
 import statistics
 import time
+from collections.abc import Iterator
 from datetime import UTC, datetime, timedelta
+from typing import cast
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
@@ -344,7 +346,7 @@ def run_evaluation(engine: Engine) -> EvaluationReport:
         and after_framework.value == {"value": "FastAPI-v2"}
     )
 
-    def session_override():
+    def session_override() -> Iterator[Session]:
         with Session(engine) as session:
             yield session
 
@@ -384,14 +386,16 @@ def run_evaluation(engine: Engine) -> EvaluationReport:
             },
         )
     )
-    if mcp_result.structured_content is None:
+    raw_mcp_content = getattr(mcp_result, "structured_content", None)
+    if not isinstance(raw_mcp_content, dict):
         raise RuntimeError("MCP evaluation returned no structured content")
+    mcp_payload = cast(dict[str, object], raw_mcp_content)
 
     rest_mcp_consistent = (
         _semantic_context(rest_payload)
-        == _semantic_context(mcp_result.structured_content)
+        == _semantic_context(mcp_payload)
         and rest_payload["policy"]["decision"]
-        == mcp_result.structured_content["policy"]["decision"]
+        == cast(dict[str, object], mcp_payload["policy"])["decision"]
     )
 
     p50 = statistics.median(timings)
