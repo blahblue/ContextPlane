@@ -14,7 +14,7 @@ Status values: **planned**, **partial**, **implemented**, **verified**, **deferr
 | Persistence | Database readiness integration | Yes | verified | real PostgreSQL integration test |
 | Registry | Context item schema | Yes | verified | Pydantic + PostgreSQL constraints |
 | Registry | Scope schema | Yes | verified | strict validation + tenant DB constraint |
-| Registry | Authenticated context authoring API | No | deferred | post-MVP publishing workflow; seed + insert-only repository cover MVP authoring |
+| Registry | Authenticated context authoring API | No | verified | PR-025 auth + idempotency + immutable create/supersede + publication audit |
 | Registry | Immutable versioning | Yes | verified | insert-only history + PostgreSQL lineage constraints |
 | Registry | Provenance schema | Yes | verified | typed source fields + DB constraints |
 | Graph | Typed relationships | Yes | verified | tenant-scoped logical edges + PostgreSQL FK/adversarial tests |
@@ -37,6 +37,7 @@ Status values: **planned**, **partial**, **implemented**, **verified**, **deferr
 | Security | REST perimeter hardening | Yes | verified | no-store headers + security headers + input bounds + reference rate limiting |
 | Security | PostgreSQL tenant RLS | Yes | verified | non-owner direct-read/write isolation tests + transaction-local tenant binding |
 | Governance | Publishing authorization | Yes | verified | explicit per-authority permissions + self-preference and cross-tenant denial tests |
+| Governance | Publisher provenance + publication audit | No | verified | server-derived actor provenance + append-only payload-minimized audit + RLS |
 | Evaluation | Reproducible MVP benchmark | Yes | verified | CI run 36990742946: 4/4 golden, 0 policy violations, 0% over-retrieval, REST/MCP consistent |
 | Client | Coding-agent demo | Yes | verified | exact seed fixture + repository-specific MCP helper integration + Cursor config validation |
 | Client | Copilot Studio demo | Yes | verified | identity-aware MCP helper demo + cross-user/tenant isolation + authoritative-update tests |

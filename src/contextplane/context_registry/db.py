@@ -76,6 +76,25 @@ class ContextItemRecord(Base):
             name="ck_context_items_no_self_supersession",
         ),
         CheckConstraint(
+            "("
+            "publisher_subject IS NULL AND publisher_kind IS NULL "
+            "AND publication_action IS NULL AND publication_permission IS NULL"
+            ") OR ("
+            "publisher_subject IS NOT NULL AND length(btrim(publisher_subject)) > 0 "
+            "AND publisher_kind IN ('user','agent','service') "
+            "AND publication_action IN ('create','supersede') "
+            "AND publication_permission IN ("
+            "'context.publish.preference.self',"
+            "'context.publish.preference',"
+            "'context.publish.recommendation',"
+            "'context.publish.standard',"
+            "'context.publish.policy',"
+            "'context.publish.mandatory_control'"
+            ")"
+            ")",
+            name="ck_context_items_publication_provenance_shape",
+        ),
+        CheckConstraint(
             "(version = 1 AND supersedes_id IS NULL) OR "
             "(version > 1 AND supersedes_id IS NOT NULL)",
             name="ck_context_items_version_lineage_shape",
@@ -149,6 +168,12 @@ class ContextItemRecord(Base):
     sensitivity: Mapped[str] = mapped_column(String(64), nullable=False)
     override_policy: Mapped[str] = mapped_column(String(64), nullable=False)
     checksum: Mapped[str] = mapped_column(String(64), nullable=False)
+
+    publisher_subject: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    publisher_kind: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    publisher_client_id: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    publication_action: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    publication_permission: Mapped[str | None] = mapped_column(String(128), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

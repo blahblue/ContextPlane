@@ -205,7 +205,7 @@ Do **not** begin with broad SaaS connectors. Seed the first corpus with reposito
 
 ## Phase 11 — Authenticated publishing governance
 
-**PR-024 publishing authorization model: verified. Authenticated write API and approval workflow remain PR-025/PR-026.**
+**PR-024 publishing authorization model: verified. PR-025 authenticated immutable write API: verified. High-authority approval workflow remains PR-026.**
 
 PR-024 establishes:
 
@@ -217,4 +217,17 @@ PR-024 establishes:
 
 Verification: GitHub Actions run 36999501915 passed secret scanning, dependency audit, Ruff, strict mypy, PostgreSQL migrations, 287 tests at 94.57% coverage, and the MVP evaluation.
 
-The write path is intentionally not exposed yet. PR-025 must derive tenant and publisher identity server-side and persist publisher provenance separately from semantic owner/source metadata. PR-026 then adds approval state for high-authority publication.
+PR-025 adds the authenticated write path:
+
+- `POST /v1/context/items` and immutable supersession;
+- server-derived tenant and publisher identity;
+- server-derived checksums and server-fixed `source_type=api`;
+- explicit PR-024 authority authorization;
+- bounded mandatory idempotency keys and safe replay;
+- publisher provenance persisted separately from semantic owner/source metadata;
+- payload-minimized append-only publication audit under tenant RLS;
+- direct supersession cannot change authority level before the approval workflow.
+
+Verification: GitHub Actions run 37044294759 passed secret scanning, dependency audit, Ruff, strict mypy, PostgreSQL migrations, 301 tests at 94.36% coverage, and the MVP evaluation.
+
+PR-026 adds draft/approval/active state and separation of publisher/approver for policy and mandatory-control publication.

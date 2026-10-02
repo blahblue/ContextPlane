@@ -234,3 +234,26 @@ for production deployments. When enabled, application startup rejects a database
 - `sslmode=verify-full`.
 
 Prefer `verify-full` when possible because it verifies both the certificate chain and hostname. Local Docker development may keep TLS enforcement disabled.
+
+
+## Authenticated context publishing
+
+The write API accepts semantic context fields but never tenant or publisher identity.
+
+For authenticated publication:
+
+- tenant comes from the normalized Principal;
+- authority is checked through the explicit PR-024 publication permission;
+- publisher subject/kind/client are persisted separately from semantic owner/source metadata;
+- the server derives the context checksum;
+- the server fixes authenticated-write `source_type` to `api`; connector source types cannot be asserted by the caller;
+- every request requires a bounded Idempotency-Key;
+- raw context values are omitted from publication audit records;
+- denied and conflicting attempts receive a durable publication correlation ID;
+- supersession cannot change authority level until the approval workflow exists.
+
+The current `owner` and `source` fields are descriptive provenance supplied by an authorized publisher. They are **not** proof of the authenticated actor and must not be used as authorization inputs.
+
+Policy and mandatory-control publication is permission-gated, but second-party approval is not present until PR-026. Do not treat direct high-authority publication as a completed enterprise approval workflow.
+
+See ADR-017 and ADR-018.
