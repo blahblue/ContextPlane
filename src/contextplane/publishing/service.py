@@ -4,6 +4,7 @@ from contextplane.auth import Principal, PrincipalKind, principal_has_permission
 from contextplane.context_registry.domain import AuthorityLevel, ContextItemCreate
 from contextplane.publishing.domain import (
     PublicationAction,
+    PublicationApprovalPermission,
     PublicationAuthorization,
     PublicationPermission,
 )
@@ -65,3 +66,56 @@ def authorize_publication(
         authority_level=item.authority_level,
         permission_used=permission,
     )
+
+
+
+_APPROVAL_PERMISSION = {
+    AuthorityLevel.POLICY: PublicationApprovalPermission.APPROVE_POLICY,
+    AuthorityLevel.MANDATORY_CONTROL: (
+        PublicationApprovalPermission.APPROVE_MANDATORY_CONTROL
+    ),
+}
+
+_ACTIVATION_PERMISSION = {
+    AuthorityLevel.POLICY: PublicationApprovalPermission.ACTIVATE_POLICY,
+    AuthorityLevel.MANDATORY_CONTROL: (
+        PublicationApprovalPermission.ACTIVATE_MANDATORY_CONTROL
+    ),
+}
+
+
+def authorize_approval(
+    *,
+    principal: Principal,
+    authority_level: AuthorityLevel,
+    publisher_kind: PrincipalKind,
+    publisher_subject: str,
+    require_distinct_approver: bool,
+) -> PublicationApprovalPermission:
+    """Authorize one high-authority approval decision."""
+    permission = _APPROVAL_PERMISSION.get(authority_level)
+    if permission is None or not principal_has_permission(principal, permission.value):
+        raise PublicationAuthorizationError("publication approval is not authorized")
+
+    if (
+        require_distinct_approver
+        and principal.kind is publisher_kind
+        and principal.subject == publisher_subject
+    ):
+        raise PublicationAuthorizationError(
+            "publisher cannot approve their own high-authority proposal"
+        )
+
+    return permission
+
+
+def authorize_activation(
+    *,
+    principal: Principal,
+    authority_level: AuthorityLevel,
+) -> PublicationApprovalPermission:
+    """Authorize activation after an independent approval exists."""
+    permission = _ACTIVATION_PERMISSION.get(authority_level)
+    if permission is None or not principal_has_permission(principal, permission.value):
+        raise PublicationAuthorizationError("publication activation is not authorized")
+    return permission
