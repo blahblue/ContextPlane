@@ -246,6 +246,7 @@ For authenticated publication:
 - authority is checked through the explicit PR-024 publication permission;
 - publisher subject/kind/client are persisted separately from semantic owner/source metadata;
 - the server derives the context checksum;
+- the server fixes authenticated-write `source_type` to `api`; connector source types cannot be asserted by the caller;
 - every request requires a bounded Idempotency-Key;
 - raw context values are omitted from publication audit records;
 - denied and conflicting attempts receive a durable publication correlation ID;
