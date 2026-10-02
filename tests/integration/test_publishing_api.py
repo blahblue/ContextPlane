@@ -3,7 +3,7 @@ from uuid import UUID, uuid4
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import select, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
 
@@ -312,6 +312,129 @@ def test_publication_audit_is_immutable(engine) -> None:
                 update(PublicationAuditRecord)
                 .where(PublicationAuditRecord.publication_id == publication_id)
                 .values(outcome="denied")
+            )
+            session.commit()
+        session.rollback()
+
+
+
+def test_idempotency_key_header_is_required() -> None:
+    tenant = f"publish-no-idem-{uuid4()}"
+    authenticate_as(
+        principal(
+            tenant,
+            permissions=frozenset({PublicationPermission.STANDARD.value}),
+        )
+    )
+
+    response = TestClient(app).post(
+        "/v1/context/items",
+        headers={"Authorization": "Bearer test"},
+        json=body(),
+    )
+
+    assert response.status_code == 422
+
+
+def test_oversized_publication_payload_is_rejected() -> None:
+    tenant = f"publish-large-{uuid4()}"
+    authenticate_as(
+        principal(
+            tenant,
+            permissions=frozenset({PublicationPermission.STANDARD.value}),
+        )
+    )
+    payload = body()
+    payload["value"] = {"value": "x" * 270_000}
+
+    response = publish(TestClient(app), payload=payload, idem="too-large")
+
+    assert response.status_code == 422
+
+
+def test_stale_predecessor_cannot_be_superseded_twice() -> None:
+    tenant = f"publish-stale-{uuid4()}"
+    authenticate_as(
+        principal(
+            tenant,
+            permissions=frozenset({PublicationPermission.STANDARD.value}),
+        )
+    )
+    client = TestClient(app)
+
+    created = publish(client, payload=body(), idem="stale-create")
+    previous_id = created.json()["record_id"]
+
+    first = client.post(
+        f"/v1/context/items/{previous_id}/supersede",
+        headers={
+            "Authorization": "Bearer test",
+            "Idempotency-Key": "stale-v2",
+        },
+        json=body(value="v2"),
+    )
+    second = client.post(
+        f"/v1/context/items/{previous_id}/supersede",
+        headers={
+            "Authorization": "Bearer test",
+            "Idempotency-Key": "stale-v3",
+        },
+        json=body(value="v3"),
+    )
+
+    assert first.status_code == 201
+    assert second.status_code == 409
+
+
+def test_cross_tenant_supersession_target_is_not_visible(engine) -> None:
+    tenant_a = f"publish-cross-a-{uuid4()}"
+    tenant_b = f"publish-cross-b-{uuid4()}"
+
+    authenticate_as(
+        principal(
+            tenant_b,
+            permissions=frozenset({PublicationPermission.STANDARD.value}),
+        )
+    )
+    client = TestClient(app)
+    created_b = publish(client, payload=body(), idem="cross-b-create")
+    foreign_id = created_b.json()["record_id"]
+
+    authenticate_as(
+        principal(
+            tenant_a,
+            permissions=frozenset({PublicationPermission.STANDARD.value}),
+        )
+    )
+    attempted = client.post(
+        f"/v1/context/items/{foreign_id}/supersede",
+        headers={
+            "Authorization": "Bearer test",
+            "Idempotency-Key": "cross-a-attempt",
+        },
+        json=body(value="attacker"),
+    )
+
+    assert attempted.status_code == 404
+
+
+def test_publication_audit_delete_is_rejected(engine) -> None:
+    tenant = f"publish-delete-{uuid4()}"
+    authenticate_as(
+        principal(
+            tenant,
+            permissions=frozenset({PublicationPermission.STANDARD.value}),
+        )
+    )
+    response = publish(TestClient(app), payload=body(), idem="immutable-delete")
+    publication_id = UUID(response.json()["publication_id"])
+
+    with Session(engine) as session:
+        with pytest.raises(DBAPIError, match="publication audit records are immutable"):
+            session.execute(
+                delete(PublicationAuditRecord).where(
+                    PublicationAuditRecord.publication_id == publication_id
+                )
             )
             session.commit()
         session.rollback()
