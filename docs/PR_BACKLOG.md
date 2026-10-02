@@ -262,6 +262,8 @@ Acceptance:
 
 ### PR-025 — Authenticated context write API
 
+**Status:** verified
+
 Dependencies: PR-024
 
 Acceptance:
