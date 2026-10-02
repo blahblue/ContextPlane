@@ -9,6 +9,10 @@ from contextplane.audit.db import ResolutionAuditRecord
 from contextplane.context_graph.db import ContextRelationRecord
 from contextplane.context_registry.db import ContextItemRecord
 from contextplane.context_registry.state_db import ContextStateRevisionRecord
+from contextplane.publishing.approval_db import (
+    PublicationApprovalEventRecord,
+    PublicationProposalRecord,
+)
 from contextplane.publishing.db import PublicationAuditRecord
 from contextplane.settings import Settings
 
@@ -26,6 +30,8 @@ if (
     or ResolutionAuditRecord.metadata is not target_metadata
     or ContextStateRevisionRecord.metadata is not target_metadata
     or PublicationAuditRecord.metadata is not target_metadata
+    or PublicationProposalRecord.metadata is not target_metadata
+    or PublicationApprovalEventRecord.metadata is not target_metadata
 ):
     raise RuntimeError("ContextPlane persistence models must share SQLAlchemy metadata")
 
