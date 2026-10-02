@@ -42,7 +42,10 @@ from contextplane.publishing.domain import (
     PublicationProposalResponse,
     PublicationProposalState,
 )
-from contextplane.publishing.repository import create_publication_audit
+from contextplane.publishing.repository import (
+    create_publication_audit,
+    get_publication_audit_by_idempotency,
+)
 from contextplane.publishing.service import (
     PublicationAuthorizationError,
     authorize_activation,
@@ -152,7 +155,7 @@ def _audit_proposal_creation_failure(
     principal: Principal,
     request: CreatePublicationProposalRequest,
     item: ContextItemCreate,
-    idempotency_key: str,
+    idempotency_key_hash: str,
     authorization: PublicationAuthorization | None,
     outcome: PublicationOutcome,
     error_code: str,
@@ -162,9 +165,7 @@ def _audit_proposal_creation_failure(
         principal=principal,
         action=request.action,
         authority_level=item.authority_level.value,
-        idempotency_key_hash=sha256_text(
-            f"proposal:{idempotency_key}"
-        ),
+        idempotency_key_hash=idempotency_key_hash,
         request_hash=publication_request_hash(
             action=request.action,
             previous_id=request.previous_id,
@@ -202,6 +203,7 @@ def create_publication_proposal(
         item=item,
     )
     idempotency_hash = sha256_text(idempotency_key)
+    failure_idempotency_hash = sha256_text(f"proposal:{idempotency_key}")
 
     existing = get_proposal_by_actor_idempotency(
         session,
@@ -217,6 +219,36 @@ def create_publication_proposal(
             )
         return _proposal_response(session, proposal=existing)
 
+    prior_failure = get_publication_audit_by_idempotency(
+        session,
+        principal=principal,
+        idempotency_key_hash=failure_idempotency_hash,
+    )
+    if prior_failure is not None:
+        if prior_failure.request_hash != request_hash:
+            raise ApprovalWorkflowConflictError(
+                "idempotency key was reused for a different proposal",
+                publication_id=prior_failure.publication_id,
+                error_code="idempotency_mismatch",
+            )
+        if prior_failure.outcome == PublicationOutcome.DENIED.value:
+            raise ApprovalWorkflowDeniedError(
+                "publication proposal is not authorized",
+                publication_id=prior_failure.publication_id,
+                error_code=prior_failure.error_code,
+            )
+        if prior_failure.error_code == "previous_not_found":
+            raise ApprovalWorkflowNotFoundError(
+                "context item was not found",
+                publication_id=prior_failure.publication_id,
+                error_code=prior_failure.error_code,
+            )
+        raise ApprovalWorkflowConflictError(
+            "publication proposal could not be created",
+            publication_id=prior_failure.publication_id,
+            error_code=prior_failure.error_code,
+        )
+
     try:
         authorization = authorize_publication(
             principal=principal,
@@ -229,7 +261,7 @@ def create_publication_proposal(
             principal=principal,
             request=request,
             item=item,
-            idempotency_key=idempotency_key,
+            idempotency_key_hash=failure_idempotency_hash,
             authorization=None,
             outcome=PublicationOutcome.DENIED,
             error_code="not_authorized",
@@ -254,7 +286,7 @@ def create_publication_proposal(
                 principal=principal,
                 request=request,
                 item=item,
-                idempotency_key=idempotency_key,
+                idempotency_key_hash=failure_idempotency_hash,
                 authorization=authorization,
                 outcome=PublicationOutcome.CONFLICT,
                 error_code="previous_not_found",
@@ -270,7 +302,7 @@ def create_publication_proposal(
                 principal=principal,
                 request=request,
                 item=item,
-                idempotency_key=idempotency_key,
+                idempotency_key_hash=failure_idempotency_hash,
                 authorization=authorization,
                 outcome=PublicationOutcome.CONFLICT,
                 error_code="identity_mismatch",
