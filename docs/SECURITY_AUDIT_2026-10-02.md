@@ -41,7 +41,7 @@ REST uses server-side HTTP Bearer validation. MCP remote transport reuses the En
 
 ### Authorization and object/tenant isolation
 
-PASS for the implemented runtime, with database RLS recommended as defense in depth.
+PASS for the implemented runtime. PostgreSQL RLS is now implemented as defense in depth for non-owner runtime roles.
 
 Tenant, user/agent subject, and client identity are derived from the authenticated principal. Request bodies cannot supply those fields. Audit lookup is scoped to exact actor identity. The adversarial suite covers cross-tenant, cross-user, cache-confusion, policy-injection, and MCP identity/domain injection attempts.
 
@@ -124,7 +124,23 @@ The first enforced pip-audit run immediately found PYSEC-2026-1845 in the prior 
 - remote Entra JWKS discovery/rotation and Conditional Access claims challenges;
 - dependency lock/hash strategy for deployable releases;
 - backup/restore drill and external WORM/SIEM audit export;
-- authenticated high-authority publishing workflow;
+- second-party approval workflow for policy/mandatory-control publication (PR-026); authenticated authorization/write paths are now implemented by PR-024/PR-025;
 - production load/resilience testing.
 
 These are explicit follow-ups, not claims of current coverage.
+
+
+### Post-MVP publishing hardening
+
+PR-024 and PR-025 close the original authenticated-authoring gap:
+
+- publication authority is granted only by explicit, non-inheriting permissions;
+- tenant and publisher identity are derived from the authenticated principal;
+- self-preference publishing is limited to the authenticated user's own scope;
+- authenticated create/supersede writes are immutable and idempotent;
+- publisher provenance is stored separately from semantic owner/source metadata;
+- API-authored rows are server-labeled `source_type=api`, preventing callers from claiming connector attestation;
+- publication attempts are recorded in a payload-minimized append-only audit under tenant RLS;
+- direct supersession cannot change authority level before the approval workflow exists.
+
+Remaining governance gap: PR-026 must add second-party approval/activation semantics for policy and mandatory-control publication before the high-authority write path is treated as a complete enterprise publishing workflow.
